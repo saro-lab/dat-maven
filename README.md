@@ -1,4 +1,4 @@
-# DAT - Data Access Token
+# DAT - Distributed Access Token
 
 # gradle
 ```
