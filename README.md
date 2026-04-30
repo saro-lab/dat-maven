@@ -2,14 +2,14 @@
 
 # gradle
 ```
-implementation("me.saro:dat:1.0.1")
+implementation("me.saro:dat:1.1.0")
 ```
 # maven
 ```
 <dependency>
     <groupId>me.saro</groupId>
     <artifactId>dat</artifactId>
-    <version>1.0.1</version>
+    <version>1.1.0</version>
 </dependency>
 ```
 
@@ -82,12 +82,6 @@ secure: asdf
 |------------|-----------------------------|
 | AES128GCMN | aes-128-gcm n(nonce + body) |
 | AES256GCMN | aes-256-cbc n(nonce + body) |
-
-## support dat key format version
-| support key format version | maven version |
-|----------------------------|---------------|
-| 2                          | 1.0.0 +       |
-| 1                          | BETA          |
 
 
 ### See Also

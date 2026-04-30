@@ -6,6 +6,7 @@ interface SignatureKey: Cloneable {
     fun getVerifyingKeyBytes(): ByteArray
     fun verify(body: ByteArray, signature: ByteArray): Boolean
     fun sign(body: ByteArray): ByteArray
+    fun hasSigningKey(): Boolean
     public override fun clone(): SignatureKey
 
     companion object {

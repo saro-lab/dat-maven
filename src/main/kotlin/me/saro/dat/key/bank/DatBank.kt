@@ -2,22 +2,20 @@ package me.saro.dat.key.bank
 
 import me.saro.dat.key.dat.DatKey
 import me.saro.dat.key.dat.Payload
-import me.saro.dat.key.dat.kid.Kid
-import me.saro.dat.key.dat.kid.ToKid
 import me.saro.dat.key.exception.DatException
 import me.saro.dat.key.signature.SignatureKeyOutOption
+import java.util.concurrent.locks.ReentrantReadWriteLock
 import java.util.stream.Collectors
+import kotlin.concurrent.read
+import kotlin.concurrent.write
 
 class DatBank(
-    val toKid: ToKid,
-    private var paddingKeys: List<DatKey> = emptyList(),
     private var issueKey: DatKey? = null,
     private var verifyKeys: List<DatKey> = emptyList(),
 ) {
-    constructor(toKid: ToKid) : this(toKid, emptyList(), null, emptyList())
+    constructor() : this(null, emptyList())
 
-    private val lock = Any()
-    private val paddingKeysLock = Any()
+    private val lock = ReentrantReadWriteLock()
 
     fun toDat(plain: String, secure: String): String {
         if (issueKey != null) {
@@ -28,78 +26,78 @@ class DatBank(
     }
 
     fun toPayload(dat: String): Payload {
-        val split = DatKey.split(dat)
-        val kid = toKid.toKid(split[1])
-        return findDatKey(kid).toPayload(dat, split, kid)
+        val parts = DatKey.split(dat)
+        return find(parts[1]).toPayload(dat, parts)
     }
 
     fun toPayloadWithoutVerify(dat: String): Payload {
-        val split = DatKey.split(dat)
-        return findDatKey(toKid.toKid(split[1])).toPayloadWithoutVerifying(split)
+        val parts = DatKey.split(dat)
+        return find(parts[1]).toPayloadWithoutVerifying(parts)
     }
 
-    internal fun findDatKey(kid: Kid): DatKey {
-        val key = synchronized(lock) {
+    internal fun find(kid: String): DatKey {
+        return lock.read {
             verifyKeys.find { it.kid == kid }
-        }
-        if (key == null) {
-            throw DatException("KidNotFound")
-        }
-        return key
+        } ?: throw DatException("KidNotFound")
     }
 
-    fun exportkids(): List<String> {
-        return synchronized(lock) {
-            verifyKeys.map { it.kid.toString() }
+    fun exportsKids(): List<String> {
+        return lock.read {
+            verifyKeys.map { it.kid }
         }
     }
 
-    fun exportkeys(): List<DatKey> {
-        return synchronized(lock) {
+    fun exportsDatKeys(): List<DatKey> {
+        return lock.read {
             verifyKeys.map { it.clone() }
         }
     }
 
-    fun exportKeysFormat(signatureKeyOutOption: SignatureKeyOutOption): String {
-        return synchronized(lock) {
-            verifyKeys.map { it.format(signatureKeyOutOption) }
+    fun exports(signatureKeyOutOption: SignatureKeyOutOption): String {
+        return lock.read {
+            verifyKeys.map { it.exports(signatureKeyOutOption) }
         }.joinToString("\n")
     }
 
-    fun importKeysFormat(format: String, clear: Boolean) {
+    fun imports(format: String, clear: Boolean) {
         val list = if (format.isNotBlank()) {
-            format.split("\n")
-                .stream()
+            format.lineSequence()
                 .filter { it.isNotBlank() }
-                .map { DatKey.parse(it, toKid) }
+                .map { DatKey.parse(it) }
                 .toList()
         } else {
             listOf()
         }
-        importKeys(list, clear)
+        imports(list, clear)
     }
 
-    fun importKeys(newKeys: List<DatKey>, clear: Boolean) {
-        val list = synchronized(paddingKeysLock) {
-            val list = if (clear) { mutableListOf<DatKey>() } else { paddingKeys.toMutableList() }
-            for (key in newKeys) {
-                if (!list.contains(key)) {
-                    list.add(key)
-                }
-            }
-            paddingKeys = list.stream()
-                .filter { !it.expired() }
-                .sorted(Comparator.comparingLong { it.issueBegin })
-                .collect(Collectors.toList())
-
-            paddingKeys.map { it.clone() }
+    fun imports(newKeys: List<DatKey>, clear: Boolean) {
+        var list = if (clear) {
+            mutableListOf<DatKey>()
+        } else {
+            exportsDatKeys().toMutableList()
         }
+
+        for (key in newKeys) {
+            if (!list.contains(key)) {
+                list.add(key)
+            }
+        }
+
+        list = list.stream()
+            .filter { !it.expired() }
+            .sorted(Comparator.comparingLong { it.issueBegin })
+            .collect(Collectors.toList())
 
         val now = System.currentTimeMillis() / 1000L
 
-        synchronized(lock) {
-            issueKey = list.findLast { it.issueBegin <= now && it.issueEnd > now }
-            verifyKeys = list
+        val issueKey: DatKey? = list.findLast {
+            it.hasSigningKey() && it.issueBegin <= now && it.issueEnd > now
+        }?.clone()
+
+        lock.write {
+            this.verifyKeys = list
+            this.issueKey = issueKey
         }
     }
 }

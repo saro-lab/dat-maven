@@ -5,9 +5,6 @@ import me.saro.dat.key.bank.DatBank;
 import me.saro.dat.key.crypto.CryptoAlgorithm;
 import me.saro.dat.key.dat.DatKey;
 import me.saro.dat.key.dat.Payload;
-import me.saro.dat.key.dat.kid.Kid;
-import me.saro.dat.key.dat.kid.KidLong;
-import me.saro.dat.key.dat.kid.ToKid;
 import me.saro.dat.key.signature.SignatureAlgorithm;
 import me.saro.dat.key.signature.SignatureKeyOutOption;
 import org.junit.jupiter.api.Test;
@@ -17,7 +14,7 @@ import java.util.List;
 
 public class DatBankTest {
 
-    public DatKey generate(Kid kid, SignatureAlgorithm signatureAlgorithm, CryptoAlgorithm cryptoAlgorithm) {
+    public DatKey generate(String kid, SignatureAlgorithm signatureAlgorithm, CryptoAlgorithm cryptoAlgorithm) {
         return DatKey.generate(
                 kid,
                 signatureAlgorithm,
@@ -30,25 +27,24 @@ public class DatBankTest {
 
     @Test
     public void test() {
-        ToKid toKid = Kid.BY_LONG;
         String plain = DatUtils.generateRandomBase62(30);
         String secure = DatUtils.generateRandomBase62(30);
-        DatBank bank = new DatBank(toKid);
+        DatBank bank = new DatBank();
         List<String> dats = new ArrayList<>();
         long i = 1;
 
         for (var signatureAlgorithm : SignatureAlgorithm.getEntries()) {
             for (var cryptoAlgorithm : CryptoAlgorithm.getEntries()) {
                 for (var j = 0; j < 20; j++) {
-                    DatKey key = generate(new KidLong(i++), signatureAlgorithm, cryptoAlgorithm);
+                    DatKey key = generate(Long.toString(i++), signatureAlgorithm, cryptoAlgorithm);
                     dats.add(key.toDat(plain, secure));
-                    bank.importKeys(List.of(key), false);
+                    bank.imports(List.of(key), false);
                 }
             }
         }
 
-        DatBank readBank = new DatBank(toKid);
-        readBank.importKeysFormat(bank.exportKeysFormat(SignatureKeyOutOption.FULL), true);
+        DatBank readBank = new DatBank();
+        readBank.imports(bank.exports(SignatureKeyOutOption.FULL), true);
 
         for (String dat : dats) {
             Payload payload = readBank.toPayload(dat);
@@ -60,8 +56,7 @@ public class DatBankTest {
 
     //@Test
     public void tmp() {
-        ToKid toKid = Kid.BY_LONG;
-        DatBank bank = new DatBank(toKid);
+        DatBank bank = new DatBank();
 
 
         String format = "2.208.P256.0l0Zg3M6awe-EazlOPu2toOeCNLG0fJSg0jyFMxS0GA.AES128GCMN.80vsGYE1I0FuIg6IsGTcmg.1777223714.1777227314.1800\n" +
@@ -79,7 +74,7 @@ public class DatBankTest {
                 "2.220.P256.YvrE6Sn-1_tNQxVwT1qr2a9MfKLD_02X8TKD5xvfgf8.AES128GCMN.7imRXI1R-Jf730TqkgOm5Q.1777229631.1777233231.180";
 
 
-        bank.importKeysFormat(format, true);
+        bank.imports(format, true);
 
         String dat = bank.toDat("plain", "secure");
 

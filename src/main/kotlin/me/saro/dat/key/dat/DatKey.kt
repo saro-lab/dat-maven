@@ -3,8 +3,6 @@ package me.saro.dat.key.dat
 import me.saro.dat.key.DatUtils
 import me.saro.dat.key.crypto.CryptoAlgorithm
 import me.saro.dat.key.crypto.CryptoKey
-import me.saro.dat.key.dat.kid.Kid
-import me.saro.dat.key.dat.kid.ToKid
 import me.saro.dat.key.exception.DatException
 import me.saro.dat.key.signature.SignatureAlgorithm
 import me.saro.dat.key.signature.SignatureKey
@@ -12,7 +10,7 @@ import me.saro.dat.key.signature.SignatureKeyOutOption
 import java.io.ByteArrayOutputStream
 
 class DatKey(
-    val kid: Kid,
+    val kid: String,
     val signatureAlgorithm: SignatureAlgorithm,
     val signatureKey: SignatureKey,
     val cryptoAlgorithm: CryptoAlgorithm,
@@ -21,7 +19,15 @@ class DatKey(
     val issueEnd: Long,
     val tokenTtl: Long,
 ): Cloneable {
-    fun format(signatureKeyOutOption: SignatureKeyOutOption): String {
+    private val kidBytes: ByteArray = kid.toByteArray()
+
+    init {
+        if (DatUtils.hasEscapeDatChars(kid)) {
+            throw DatException("kid contains escape characters")
+        }
+    }
+
+    fun exports(signatureKeyOutOption: SignatureKeyOutOption): String {
         val signatureKeyBase64 = when (signatureKeyOutOption) {
             SignatureKeyOutOption.FULL -> "${DatUtils.encodeBase64UrlWp(signatureKey.getSigningKeyBytes()!!)}~${DatUtils.encodeBase64UrlWp(signatureKey.getVerifyingKeyBytes())}"
             SignatureKeyOutOption.SIGNING -> DatUtils.encodeBase64UrlWp(signatureKey.getSigningKeyBytes()!!)
@@ -40,7 +46,7 @@ class DatKey(
         bw.write(DOT)
 
         // kid
-        bw.write(kid.toBytes())
+        bw.write(kidBytes)
         bw.write(DOT)
 
         // plain
@@ -61,23 +67,23 @@ class DatKey(
         return toDat(plain.toByteArray(Charsets.UTF_8), secure.toByteArray(Charsets.UTF_8))
     }
 
-    internal fun toPayload(dat: String, split: List<String>, kid: Kid): Payload {
-        val expire = split[0].toLong()
+    internal fun toPayload(dat: String, parts: List<String>): Payload {
+        val expire = parts[0].toLong()
         if (expire < (System.currentTimeMillis() / 1000)) {
             throw DatException("Expired")
         }
-        if (this.kid != kid) {
-            throw DatException("InvalidKid")
-        }
-        if (!signatureKey.verify(dat.substring(0, dat.length - split[4].length - 1).toByteArray(), DatUtils.decodeBase64UrlWp(split[4]))) {
+        if (!signatureKey.verify(dat.substring(0, dat.length - parts[4].length - 1).toByteArray(), DatUtils.decodeBase64UrlWp(parts[4]))) {
             throw DatException("InvalidSignature")
         }
-        return toPayloadWithoutVerifying(split)
+        return toPayloadWithoutVerifying(parts)
     }
 
-    fun toPayload(dat: String, toKid: ToKid): Payload {
-        val split = split(dat)
-        return toPayload(dat, split, toKid.toKid(split[1]))
+    fun toPayload(dat: String): Payload {
+        return toPayload(dat, split(dat))
+    }
+
+    fun hasSigningKey(): Boolean {
+        return signatureKey.hasSigningKey()
     }
 
     public override fun clone(): DatKey {
@@ -93,9 +99,9 @@ class DatKey(
         )
     }
 
-    internal fun toPayloadWithoutVerifying(split: List<String>): Payload {
-        val plain = DatUtils.decodeBase64UrlWp(split[2])
-        val secure = cryptoKey.decrypt(DatUtils.decodeBase64UrlWp(split[3]))
+    internal fun toPayloadWithoutVerifying(parts: List<String>): Payload {
+        val plain = DatUtils.decodeBase64UrlWp(parts[2])
+        val secure = cryptoKey.decrypt(DatUtils.decodeBase64UrlWp(parts[3]))
         return Payload(plain, secure)
     }
 
@@ -119,15 +125,15 @@ class DatKey(
         val DOT: ByteArray = ".".toByteArray(Charsets.UTF_8)
 
         internal fun split(dat: String): List<String> {
-            val split = dat.split('.')
-            if (split.size != 5) {
+            val parts = dat.split('.')
+            if (parts.size != 5) {
                 throw DatException("InvalidDatFormat")
             }
-            return split
+            return parts
         }
 
         @JvmStatic
-        fun generate(kid: Kid, signatureAlgorithm: SignatureAlgorithm, cryptoAlgorithm: CryptoAlgorithm, issueBegin: Long, issueEnd: Long, tokenTtl: Long): DatKey {
+        fun generate(kid: String, signatureAlgorithm: SignatureAlgorithm, cryptoAlgorithm: CryptoAlgorithm, issueBegin: Long, issueEnd: Long, tokenTtl: Long): DatKey {
             return DatKey(
                 kid,
                 signatureAlgorithm,
@@ -141,29 +147,29 @@ class DatKey(
         }
 
         @JvmStatic
-        fun parse(format: String, toKid: ToKid): DatKey {
-            val split: List<String> = format.split(".")
-            when (split[0]) {
+        fun parse(format: String): DatKey {
+            val parts: List<String> = format.split(".")
+            when (parts[0]) {
                 "2", "1" -> {
-                    val kid = toKid.toKid(split[1])
-                    val signAlg = SignatureAlgorithm.valueOf(split[2])
-                    val signatureKeyStr = split[3].split('~')
+                    val kid = parts[1]
+                    val signAlg = SignatureAlgorithm.valueOf(parts[2])
+                    val signatureKeyStr = parts[3].split('~')
                     val signatureKey = when (signatureKeyStr.size) {
                         2 -> SignatureKey.fromBytes(signAlg, DatUtils.decodeBase64UrlWp(signatureKeyStr[0]), DatUtils.decodeBase64UrlWp(signatureKeyStr[1]))
                         1 -> SignatureKey.fromBytes(signAlg, DatUtils.decodeBase64UrlWp(signatureKeyStr[0]), ByteArray(0))
                         else -> throw DatException("invalid sign key format")
                     }
-                    val cryptAlg = CryptoAlgorithm.valueOf(split[4])
-                    val cryptoKey = CryptoKey.fromBytes(cryptAlg, DatUtils.decodeBase64UrlWp(split[5]));
+                    val cryptAlg = CryptoAlgorithm.valueOf(parts[4])
+                    val cryptoKey = CryptoKey.fromBytes(cryptAlg, DatUtils.decodeBase64UrlWp(parts[5]));
                     return DatKey(
                         kid,
                         signAlg,
                         signatureKey,
                         cryptAlg,
                         cryptoKey,
-                        split[6].toLong(),
-                        split[7].toLong(),
-                        split[8].toLong()
+                        parts[6].toLong(),
+                        parts[7].toLong(),
+                        parts[8].toLong()
                     )
                 }
             }

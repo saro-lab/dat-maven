@@ -4,7 +4,6 @@ import me.saro.dat.key.DatUtils;
 import me.saro.dat.key.crypto.CryptoAlgorithm;
 import me.saro.dat.key.dat.DatKey;
 import me.saro.dat.key.dat.Payload;
-import me.saro.dat.key.dat.kid.Kid;
 import me.saro.dat.key.signature.SignatureAlgorithm;
 import me.saro.dat.key.signature.SignatureKeyOutOption;
 import org.junit.jupiter.api.Test;
@@ -20,25 +19,25 @@ public class DatKeyTest {
         String secure = DatUtils.generateRandomBase62(30);
 
         DatKey newKey = generate(signatureAlgorithm, cryptoAlgorithm);
-        String newKeyStr = newKey.format(SignatureKeyOutOption.FULL);
+        String newKeyStr = newKey.exports(SignatureKeyOutOption.FULL);
 
-        DatKey readKey = DatKey.parse(newKeyStr, Kid.BY_STRING);
+        DatKey readKey = DatKey.parse(newKeyStr);
 
         String dat = newKey.toDat(plain, secure);
         System.out.println(tag + ": " + dat);
 
-        Payload payload = readKey.toPayload(dat, Kid.BY_STRING);
+        Payload payload = readKey.toPayload(dat);
         System.out.println(tag + ": " + payload.getPlain() + " / " + payload.getSecure());
 
         assert plain.equals(payload.getPlain());
         assert secure.equals(payload.getSecure());
-        assertThrows(Exception.class, () -> failKey.toPayload(dat, Kid.BY_STRING));
+        assertThrows(Exception.class, () -> failKey.toPayload(dat));
     }
 
 
     public DatKey generate(SignatureAlgorithm signatureAlgorithm, CryptoAlgorithm cryptoAlgorithm) {
         return DatKey.generate(
-                Kid.BY_STRING.toKid(DatUtils.generateRandomBase62(10)),
+                DatUtils.generateRandomBase62(10),
                 signatureAlgorithm,
                 cryptoAlgorithm,
                 System.currentTimeMillis() - 10,

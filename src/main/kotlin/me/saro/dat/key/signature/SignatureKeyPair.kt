@@ -98,7 +98,6 @@ class SignatureKeyPair(
             instant.update(body)
             return instant.verify(signature)
         } catch (e: Exception) {
-            e.printStackTrace()
             return false
         }
     }
@@ -111,6 +110,10 @@ class SignatureKeyPair(
             return signature.sign()
         }
         throw DatException("this key is verify only")
+    }
+
+    override fun hasSigningKey(): Boolean {
+        return this.signingKey != null
     }
 
     override fun clone(): SignatureKey {

@@ -9,7 +9,9 @@ class DatUtils {
         private val DE_BASE64_URL_WP: Base64.Decoder = Base64.getUrlDecoder()
         private val EN_BASE64_URL_WP: Base64.Encoder = Base64.getUrlEncoder().withoutPadding()
         private val MOLD_BASE62 = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz".toCharArray()
-        internal val bouncyCastleProvider = BouncyCastleProvider().apply { Security.addProvider(this) }
+        private val ESCAPE_DAT_PATTERN = Regex("[.\r\n]");
+        internal val BOUNCY_CASTLE_PROVIDER = BouncyCastleProvider().apply { Security.addProvider(this) }
+
 
         @JvmStatic
         fun encodeBase64UrlWp(bytes: ByteArray): String {
@@ -51,6 +53,11 @@ class DatUtils {
                 rv[i] = mold[(Math.random() * moldLen).toInt()]
             }
             return String(rv)
+        }
+
+        @JvmStatic
+        fun hasEscapeDatChars(str: String): Boolean {
+            return ESCAPE_DAT_PATTERN.containsMatchIn(str)
         }
     }
 }
