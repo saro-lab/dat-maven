@@ -8,6 +8,14 @@ import me.saro.dat.dat.Payload;
 import me.saro.dat.signature.DatSignatureAlgorithm;
 import org.junit.jupiter.api.Test;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URL;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
 import java.util.List;
 
 public class ExampleTest {
@@ -38,11 +46,56 @@ public class ExampleTest {
         System.out.println("plain : " + plainData);
         System.out.println("secure : " + secureData);
 
-        // to dat
+        // issue dat
         String dat = manager.issue(plainData, secureData);
         System.out.println("dat : " + dat);
 
-        // dat to payload
+        // parse dat
+        Payload payload = manager.parse(dat);
+
+        String payloadPlain = payload.getPlain();
+        String payloadSecure = payload.getSecure();
+
+        System.out.println("payload plain : " + payloadPlain);
+        System.out.println("payload secure : " + payloadSecure);
+
+        assert plainData.equals(payloadPlain);
+        assert secureData.equals(payloadSecure);
+    }
+
+    // @Test
+    public void useDatCms() throws IOException, InterruptedException {
+        // BEFORE: install dat-cms
+        // See: https://dat.saro.me/--/svc/docker-saro-lab-dat-cms
+
+        // Singleton Manager
+        DatManager manager = DatManager.newInstance();
+
+        // get certificate from dat-cms
+        HttpClient client = HttpClient.newHttpClient();
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(URI.create("http://localhost:8088/certificates"))
+                .build();
+        String body = client.send(request, HttpResponse.BodyHandlers.ofString()).body();
+        System.out.println("get certificate :");
+        System.out.println(body);
+
+        // import certificate
+        manager.imports(body, false);
+        System.out.println("certificate " + manager.exportsIds().size() + " imported.");
+
+        // example data
+        String plainData = "plain data 유니코드 !!! ABCD";
+        String secureData = ">! secure data 암호화 데이터 @@@@";
+
+        System.out.println("plain : " + plainData);
+        System.out.println("secure : " + secureData);
+
+        // issue dat
+        String dat = manager.issue(plainData, secureData);
+        System.out.println("dat : " + dat);
+
+        // parse dat
         Payload payload = manager.parse(dat);
 
         String payloadPlain = payload.getPlain();
@@ -56,19 +109,13 @@ public class ExampleTest {
     }
 
 
-    @Test
-    public void useDatManagerServer() {
-        // https://github.com/saro-lab/dat-manager
-        //
-        // docker run -d --name dat -p 8088:80 \
-        //  -e SINGLE_SERVER=CRON \
-        //  sarolab/dat
-        //
+    //@Test
+    public void useDatFormat() {
+
 
         // Singleton Manager
         DatManager manager = DatManager.newInstance();
 
-        // format = curl http://localhost:8088/certs
         String format = "0.P256.I5P_FNPSCiQrw12CXj8qYkBH_v3wFYmXBtTpmED59bs.AES128GCMN.SVz-zzee5hz9OzEHxQgEaA.1.17781627851.1800\n" +
                 "1.P256.mIA7RLJERhLD95pOpq9zxNLd98haUIbDzRR8IeWZA8c.AES128GCMN.6SnRhvQB3yh-PotQ8e_6nw.1.17781627851.1800\n" +
                 "2.P256.wRS5kklcIMdUJpCixUA4_pZNpaI1X34DK2txUGPqjd0.AES128GCMN.mCEWOK2jOWzES7LnQJtczw.1.17781627851.1800\n" +

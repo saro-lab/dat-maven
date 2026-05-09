@@ -7,6 +7,11 @@ import me.saro.dat.dat.DatCertificate.Companion.generate
 import me.saro.dat.dat.DatManager.Companion.newInstance
 import me.saro.dat.signature.DatSignatureAlgorithm
 import org.junit.jupiter.api.Test
+import java.io.IOException
+import java.net.URI
+import java.net.http.HttpClient
+import java.net.http.HttpRequest
+import java.net.http.HttpResponse
 import java.util.List
 
 class ExampleTest {
@@ -33,21 +38,68 @@ class ExampleTest {
         val plainData = "plain data 유니코드 !!! ABCD"
         val secureData = ">! secure data 암호화 데이터 @@@@"
 
-        println("plain : " + plainData)
-        println("secure : " + secureData)
+        println("plain : $plainData")
+        println("secure : $secureData")
 
-        // to dat
+        // issue dat
         val dat = manager.issue(plainData, secureData)
-        println("dat : " + dat)
+        println("dat : $dat")
 
-        // dat to payload
+        // parse dat
         val payload = manager.parse(dat)
 
         val payloadPlain = payload.plain
         val payloadSecure = payload.secure
 
-        println("payload plain : " + payloadPlain)
-        println("payload secure : " + payloadSecure)
+        println("payload plain : $payloadPlain")
+        println("payload secure : $payloadSecure")
+
+        assert(plainData == payloadPlain)
+        assert(secureData == payloadSecure)
+    }
+
+    // @Test
+    @Throws(IOException::class, InterruptedException::class)
+    fun useDatCms() {
+        // BEFORE: install dat-cms
+        // See: https://dat.saro.me/--/svc/docker-saro-lab-dat-cms
+
+        // Singleton Manager
+
+        val manager = newInstance()
+
+        // get certificate from dat-cms
+        val client = HttpClient.newHttpClient()
+        val request = HttpRequest.newBuilder()
+            .uri(URI.create("http://localhost:8088/certificates"))
+            .build()
+        val body = client.send<String>(request, HttpResponse.BodyHandlers.ofString()).body()
+        println("get certificate :")
+        println(body)
+
+        // import certificate
+        manager.imports(body, false)
+        println("certificate " + manager.exportsIds().size + " imported.")
+
+        // example data
+        val plainData = "plain data 유니코드 !!! ABCD"
+        val secureData = ">! secure data 암호화 데이터 @@@@"
+
+        println("plain : $plainData")
+        println("secure : $secureData")
+
+        // issue dat
+        val dat = manager.issue(plainData, secureData)
+        println("dat : $dat")
+
+        // parse dat
+        val payload = manager.parse(dat)
+
+        val payloadPlain = payload.plain
+        val payloadSecure = payload.secure
+
+        println("payload plain : $payloadPlain")
+        println("payload secure : $payloadSecure")
 
         assert(plainData == payloadPlain)
         assert(secureData == payloadSecure)
@@ -55,19 +107,12 @@ class ExampleTest {
 
 
     @Test
-    fun useDatManagerServer() {
-        // https://github.com/saro-lab/dat-manager
-        //
-        // docker run -d --name dat -p 8088:80 \
-        //  -e SINGLE_SERVER=CRON \
-        //  sarolab/dat
-        //
-
+    fun useDatFormat() {
         // Singleton Manager
+
 
         val manager = newInstance()
 
-        // format = curl http://localhost:8088/certs
         val format =
             "0.P256.I5P_FNPSCiQrw12CXj8qYkBH_v3wFYmXBtTpmED59bs.AES128GCMN.SVz-zzee5hz9OzEHxQgEaA.1.17781627851.1800\n" +
                     "1.P256.mIA7RLJERhLD95pOpq9zxNLd98haUIbDzRR8IeWZA8c.AES128GCMN.6SnRhvQB3yh-PotQ8e_6nw.1.17781627851.1800\n" +
@@ -88,12 +133,12 @@ class ExampleTest {
         val plainData = "plain data 유니코드 !!!"
         val secureData = ">! secure data 암호화 데이터"
 
-        println("plain : " + plainData)
-        println("secure : " + secureData)
+        println("plain : $plainData")
+        println("secure : $secureData")
 
         // to dat
         val dat = manager.issue(plainData, secureData)
-        println("dat : " + dat)
+        println("dat : $dat")
 
         // dat to payload
         val payload = manager.parse(dat)
@@ -101,8 +146,8 @@ class ExampleTest {
         val payloadPlain = payload.plain
         val payloadSecure = payload.secure
 
-        println("payload plain : " + payloadPlain)
-        println("payload secure : " + payloadSecure)
+        println("payload plain : $payloadPlain")
+        println("payload secure : $payloadSecure")
 
         assert(plainData == payloadPlain)
         assert(secureData == payloadSecure)
