@@ -1,16 +1,22 @@
 package test.kt
 
-import me.saro.dat.key.DatUtils.Companion.generateRandomBase62
-import me.saro.dat.key.bank.DatBank
-import me.saro.dat.key.crypto.CryptoAlgorithm
-import me.saro.dat.key.dat.DatKey
-import me.saro.dat.key.dat.DatKey.Companion.generate
-import me.saro.dat.key.signature.SignatureAlgorithm
-import me.saro.dat.key.signature.SignatureKeyOutOption
+import me.saro.dat.DatUtils.Companion.generateRandomBase62
+import me.saro.dat.crypto.DatCryptoAlgorithm
+import me.saro.dat.dat.DatCertificate
+import me.saro.dat.dat.DatCertificate.Companion.generate
+import me.saro.dat.dat.DatManager.Companion.issue
+import me.saro.dat.dat.DatManager.Companion.newInstance
+import me.saro.dat.signature.DatSignatureAlgorithm
+import me.saro.dat.signature.DatSignatureKeyOutOption
 import org.junit.jupiter.api.Test
+import java.util.List
 
-class DatBankTest {
-    fun generate(kid: String, signatureAlgorithm: SignatureAlgorithm, cryptoAlgorithm: CryptoAlgorithm): DatKey {
+class DatManagerTest {
+    fun generate(
+        kid: Long,
+        signatureAlgorithm: DatSignatureAlgorithm,
+        cryptoAlgorithm: DatCryptoAlgorithm
+    ): DatCertificate {
         return generate(
             kid,
             signatureAlgorithm,
@@ -25,34 +31,34 @@ class DatBankTest {
     fun test() {
         val plain = generateRandomBase62(30)
         val secure = generateRandomBase62(30)
-        val bank = DatBank()
+        val manager = newInstance()
         val dats: MutableList<String> = ArrayList<String>()
         var i: Long = 1
 
-        for (signatureAlgorithm in SignatureAlgorithm.entries) {
-            for (cryptoAlgorithm in CryptoAlgorithm.entries) {
-                repeat(20) {
-                    val key = generate((i++).toString(), signatureAlgorithm, cryptoAlgorithm)
-                    dats.add(key.toDat(plain, secure))
-                    bank.imports(listOf(key), false)
+        for (signatureAlgorithm in DatSignatureAlgorithm.entries) {
+            for (cryptoAlgorithm in DatCryptoAlgorithm.entries) {
+                for (j in 0..19) {
+                    val certificate = generate(i++, signatureAlgorithm, cryptoAlgorithm)
+                    dats.add(issue(certificate, plain, secure))
+                    manager.imports(List.of<DatCertificate>(certificate), false)
                 }
             }
         }
 
-        val readBank = DatBank()
-        readBank.imports(bank.exports(SignatureKeyOutOption.FULL), true)
+        val readManager = newInstance()
+        readManager.imports(manager.exports(DatSignatureKeyOutOption.FULL), true)
 
         for (dat in dats) {
-            val payload = readBank.toPayload(dat)
+            val payload = readManager.parse(dat)
             assert(plain == payload.plain)
             assert(secure == payload.secure)
-            println("DatBank.PASS.$dat")
+            println("DatManager.PASS." + dat)
         }
     }
 
     //@Test
     fun tmp() {
-        val bank = DatBank()
+        val manager = newInstance()
 
 
         val format =
@@ -71,11 +77,11 @@ class DatBankTest {
                     "2.220.P256.YvrE6Sn-1_tNQxVwT1qr2a9MfKLD_02X8TKD5xvfgf8.AES128GCMN.7imRXI1R-Jf730TqkgOm5Q.1777229631.1777233231.180"
 
 
-        bank.imports(format, true)
+        manager.imports(format, true)
 
-        val dat = bank.toDat("plain", "secure")
+        val dat = manager.issue("plain", "secure")
 
-        val payload = bank.toPayload(dat)
+        val payload = manager.parse(dat)
 
         println(payload)
     }

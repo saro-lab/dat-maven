@@ -1,21 +1,21 @@
 package test.java;
 
-import me.saro.dat.key.DatUtils;
-import me.saro.dat.key.bank.DatBank;
-import me.saro.dat.key.crypto.CryptoAlgorithm;
-import me.saro.dat.key.dat.DatKey;
-import me.saro.dat.key.dat.Payload;
-import me.saro.dat.key.signature.SignatureAlgorithm;
-import me.saro.dat.key.signature.SignatureKeyOutOption;
+import me.saro.dat.DatUtils;
+import me.saro.dat.crypto.DatCryptoAlgorithm;
+import me.saro.dat.dat.DatCertificate;
+import me.saro.dat.dat.DatManager;
+import me.saro.dat.dat.Payload;
+import me.saro.dat.signature.DatSignatureAlgorithm;
+import me.saro.dat.signature.DatSignatureKeyOutOption;
 import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class DatBankTest {
+public class DatManagerTest {
 
-    public DatKey generate(String kid, SignatureAlgorithm signatureAlgorithm, CryptoAlgorithm cryptoAlgorithm) {
-        return DatKey.generate(
+    public DatCertificate generate(long kid, DatSignatureAlgorithm signatureAlgorithm, DatCryptoAlgorithm cryptoAlgorithm) {
+        return DatCertificate.generate(
                 kid,
                 signatureAlgorithm,
                 cryptoAlgorithm,
@@ -29,34 +29,34 @@ public class DatBankTest {
     public void test() {
         String plain = DatUtils.generateRandomBase62(30);
         String secure = DatUtils.generateRandomBase62(30);
-        DatBank bank = new DatBank();
+        DatManager manager = DatManager.newInstance();
         List<String> dats = new ArrayList<>();
         long i = 1;
 
-        for (var signatureAlgorithm : SignatureAlgorithm.getEntries()) {
-            for (var cryptoAlgorithm : CryptoAlgorithm.getEntries()) {
+        for (var signatureAlgorithm : DatSignatureAlgorithm.getEntries()) {
+            for (var cryptoAlgorithm : DatCryptoAlgorithm.getEntries()) {
                 for (var j = 0; j < 20; j++) {
-                    DatKey key = generate(Long.toString(i++), signatureAlgorithm, cryptoAlgorithm);
-                    dats.add(key.toDat(plain, secure));
-                    bank.imports(List.of(key), false);
+                    DatCertificate certificate = generate(i++, signatureAlgorithm, cryptoAlgorithm);
+                    dats.add(DatManager.issue(certificate, plain, secure));
+                    manager.imports(List.of(certificate), false);
                 }
             }
         }
 
-        DatBank readBank = new DatBank();
-        readBank.imports(bank.exports(SignatureKeyOutOption.FULL), true);
+        DatManager readManager = DatManager.newInstance();
+        readManager.imports(manager.exports(DatSignatureKeyOutOption.FULL), true);
 
         for (String dat : dats) {
-            Payload payload = readBank.toPayload(dat);
+            Payload payload = readManager.parse(dat);
             assert plain.equals(payload.getPlain());
             assert secure.equals(payload.getSecure());
-            System.out.println("DatBank.PASS."+dat);
+            System.out.println("DatManager.PASS."+dat);
         }
     }
 
     //@Test
     public void tmp() {
-        DatBank bank = new DatBank();
+        DatManager manager = DatManager.newInstance();
 
 
         String format = "2.208.P256.0l0Zg3M6awe-EazlOPu2toOeCNLG0fJSg0jyFMxS0GA.AES128GCMN.80vsGYE1I0FuIg6IsGTcmg.1777223714.1777227314.1800\n" +
@@ -74,11 +74,11 @@ public class DatBankTest {
                 "2.220.P256.YvrE6Sn-1_tNQxVwT1qr2a9MfKLD_02X8TKD5xvfgf8.AES128GCMN.7imRXI1R-Jf730TqkgOm5Q.1777229631.1777233231.180";
 
 
-        bank.imports(format, true);
+        manager.imports(format, true);
 
-        String dat = bank.toDat("plain", "secure");
+        String dat = manager.issue("plain", "secure");
 
-        Payload payload = bank.toPayload(dat);
+        Payload payload = manager.parse(dat);
 
         System.out.println(payload);
     }

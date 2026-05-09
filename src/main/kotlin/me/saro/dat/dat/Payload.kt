@@ -1,4 +1,4 @@
-package me.saro.dat.key.dat
+package me.saro.dat.dat
 
 class Payload(
     val plainBytes: ByteArray,

@@ -1,8 +1,8 @@
 package test.java;
 
-import me.saro.dat.key.DatUtils;
-import me.saro.dat.key.crypto.CryptoAlgorithm;
-import me.saro.dat.key.crypto.CryptoKey;
+import me.saro.dat.DatUtils;
+import me.saro.dat.crypto.DatCryptoAlgorithm;
+import me.saro.dat.crypto.DatCryptoKey;
 import org.junit.jupiter.api.Test;
 
 import java.util.Arrays;
@@ -11,12 +11,12 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 public class CryptoTest {
 
-    public void unit(CryptoAlgorithm alg) {
+    public void unit(DatCryptoAlgorithm alg) {
         byte[] body = DatUtils.generateRandomBase62(100).getBytes();
-        CryptoKey cryptoKey = CryptoKey.generate(alg);
-        CryptoKey cryptoKeyFail = CryptoKey.generate(alg);
+        DatCryptoKey cryptoKey = DatCryptoKey.generate(alg);
+        DatCryptoKey cryptoKeyFail = DatCryptoKey.generate(alg);
         byte[] cryptoKeyBytes = cryptoKey.toBytes();
-        CryptoKey cryptoKeyFrom = CryptoKey.fromBytes(alg, cryptoKeyBytes);
+        DatCryptoKey cryptoKeyFrom = DatCryptoKey.fromBytes(alg, cryptoKeyBytes);
 
         var encrypted = cryptoKeyFrom.encrypt(body);
 
@@ -27,10 +27,10 @@ public class CryptoTest {
 
     @Test
     public void test() {
-        for (var alg : CryptoAlgorithm.getEntries()) {
-            System.out.println("crypto test - " + alg.name());
+        for (var algorithm : DatCryptoAlgorithm.getEntries()) {
+            System.out.println("crypto test - " + algorithm.name());
             for (var i = 0; i < 20; i++) {
-                unit(alg);
+                unit(algorithm);
             }
         }
     }

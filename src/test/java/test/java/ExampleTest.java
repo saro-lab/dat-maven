@@ -1,11 +1,11 @@
 package test.java;
 
-import me.saro.dat.key.Unixtime;
-import me.saro.dat.key.bank.DatBank;
-import me.saro.dat.key.crypto.CryptoAlgorithm;
-import me.saro.dat.key.dat.DatKey;
-import me.saro.dat.key.dat.Payload;
-import me.saro.dat.key.signature.SignatureAlgorithm;
+import me.saro.dat.Unixtime;
+import me.saro.dat.crypto.DatCryptoAlgorithm;
+import me.saro.dat.dat.DatCertificate;
+import me.saro.dat.dat.DatManager;
+import me.saro.dat.dat.Payload;
+import me.saro.dat.signature.DatSignatureAlgorithm;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
@@ -14,21 +14,21 @@ public class ExampleTest {
 
     @Test
     public void selfTest() {
-        // Singleton Bank
-        DatBank bank = new DatBank();
+        // Singleton Manager
+        DatManager manager = DatManager.newInstance();
 
         long unixTime = Unixtime.now();
 
-        DatKey key = DatKey.generate(
-                "key-id",
-                SignatureAlgorithm.P256,
-                CryptoAlgorithm.AES128GCMN,
+        DatCertificate certificate = DatCertificate.generate(
+                0,
+                DatSignatureAlgorithm.P256,
+                DatCryptoAlgorithm.AES128GCMN,
                 unixTime - 1, // issue begin time (unix time)
                 unixTime + 1800, // issue end time (unix time)
                 1800 // DAT lifetime (seconds)
         );
 
-        bank.imports(List.of(key), false);
+        manager.imports(List.of(certificate), false);
 
 
         // example data
@@ -39,11 +39,11 @@ public class ExampleTest {
         System.out.println("secure : " + secureData);
 
         // to dat
-        String dat = bank.toDat(plainData, secureData);
+        String dat = manager.issue(plainData, secureData);
         System.out.println("dat : " + dat);
 
         // dat to payload
-        Payload payload = bank.toPayload(dat);
+        Payload payload = manager.parse(dat);
 
         String payloadPlain = payload.getPlain();
         String payloadSecure = payload.getSecure();
@@ -57,31 +57,31 @@ public class ExampleTest {
 
 
     @Test
-    public void useDatBankServer() {
-        // https://github.com/saro-lab/dat-bank
+    public void useDatManagerServer() {
+        // https://github.com/saro-lab/dat-manager
         //
         // docker run -d --name dat -p 8088:80 \
         //  -e SINGLE_SERVER=CRON \
         //  sarolab/dat
         //
 
-        // Singleton Bank
-        DatBank bank = new DatBank();
+        // Singleton Manager
+        DatManager manager = DatManager.newInstance();
 
-        // format = curl http://localhost:8088/keys
-        String format = "2.0.P256.I5P_FNPSCiQrw12CXj8qYkBH_v3wFYmXBtTpmED59bs.AES128GCMN.SVz-zzee5hz9OzEHxQgEaA.1.17781627851.1800\n" +
-                "2.1.P256.mIA7RLJERhLD95pOpq9zxNLd98haUIbDzRR8IeWZA8c.AES128GCMN.6SnRhvQB3yh-PotQ8e_6nw.1.17781627851.1800\n" +
-                "2.2.P256.wRS5kklcIMdUJpCixUA4_pZNpaI1X34DK2txUGPqjd0.AES128GCMN.mCEWOK2jOWzES7LnQJtczw.1.17781627851.1800\n" +
-                "2.3.P256.YeX4JWaYQQh8HKctWsh6NuYtElCFRlRH1OyBOsGzdTM.AES128GCMN.42CSIN_0Zu-tpZqRvnMY7A.1.17781627851.1800\n" +
-                "2.4.P256.9o5N5hd6m3xHwUQhESm2-ghz1zQM9F_KI3LGqIlvvoA.AES128GCMN.ePrjtPJr25dgopD6-TgJxg.1.17781627851.1800\n" +
-                "2.5.P256.C9s4V_BWxxVtmoeIXsKcV4YKVmDdHcAWwVzvsEUzA0E.AES128GCMN.Kk0cQ9HLHWvfbJMAsKPXAg.1.17781627851.1800\n" +
-                "2.6.P256.iEqgUQRHxmFJOT1rVGK9fGleGKSsbCDo6hK7EZxVExU.AES128GCMN.u6YbhAZ5L7d6r1W3oStBjA.1.17781627851.1800\n" +
-                "2.7.P256.1hKGy6NQgrtvOBmb4YRZIJwoU1EPYTQPIDOkhBTx8PQ.AES128GCMN.MP0pBCEVCyeeyge6r1-VSw.1.17781627851.1800\n" +
-                "2.8.P256.iOEL5ERwtTmmmp7A4sVhDkTedhi4e6F53wG2xDRDEoE.AES128GCMN.VgojardW72K2jkbqNafegw.1.17781627851.1800\n" +
-                "2.9.P256.VPGAAvJhJ1KXkdPvz1AiWEHiCVR9u8KME0AOUso3-vI.AES128GCMN.Mfx6GnQZUzC0N4q0eB6PXQ.1.17781627851.1800";
+        // format = curl http://localhost:8088/certs
+        String format = "0.P256.I5P_FNPSCiQrw12CXj8qYkBH_v3wFYmXBtTpmED59bs.AES128GCMN.SVz-zzee5hz9OzEHxQgEaA.1.17781627851.1800\n" +
+                "1.P256.mIA7RLJERhLD95pOpq9zxNLd98haUIbDzRR8IeWZA8c.AES128GCMN.6SnRhvQB3yh-PotQ8e_6nw.1.17781627851.1800\n" +
+                "2.P256.wRS5kklcIMdUJpCixUA4_pZNpaI1X34DK2txUGPqjd0.AES128GCMN.mCEWOK2jOWzES7LnQJtczw.1.17781627851.1800\n" +
+                "3.P256.YeX4JWaYQQh8HKctWsh6NuYtElCFRlRH1OyBOsGzdTM.AES128GCMN.42CSIN_0Zu-tpZqRvnMY7A.1.17781627851.1800\n" +
+                "4.P256.9o5N5hd6m3xHwUQhESm2-ghz1zQM9F_KI3LGqIlvvoA.AES128GCMN.ePrjtPJr25dgopD6-TgJxg.1.17781627851.1800\n" +
+                "5.P256.C9s4V_BWxxVtmoeIXsKcV4YKVmDdHcAWwVzvsEUzA0E.AES128GCMN.Kk0cQ9HLHWvfbJMAsKPXAg.1.17781627851.1800\n" +
+                "6.P256.iEqgUQRHxmFJOT1rVGK9fGleGKSsbCDo6hK7EZxVExU.AES128GCMN.u6YbhAZ5L7d6r1W3oStBjA.1.17781627851.1800\n" +
+                "7.P256.1hKGy6NQgrtvOBmb4YRZIJwoU1EPYTQPIDOkhBTx8PQ.AES128GCMN.MP0pBCEVCyeeyge6r1-VSw.1.17781627851.1800\n" +
+                "8.P256.iOEL5ERwtTmmmp7A4sVhDkTedhi4e6F53wG2xDRDEoE.AES128GCMN.VgojardW72K2jkbqNafegw.1.17781627851.1800\n" +
+                "9.P256.VPGAAvJhJ1KXkdPvz1AiWEHiCVR9u8KME0AOUso3-vI.AES128GCMN.Mfx6GnQZUzC0N4q0eB6PXQ.1.17781627851.1800";
 
         // import
-        bank.imports(format, false);
+        manager.imports(format, false);
 
 
         // example data
@@ -92,11 +92,11 @@ public class ExampleTest {
         System.out.println("secure : " + secureData);
 
         // to dat
-        String dat = bank.toDat(plainData, secureData);
+        String dat = manager.issue(plainData, secureData);
         System.out.println("dat : " + dat);
 
         // dat to payload
-        Payload payload = bank.toPayload(dat);
+        Payload payload = manager.parse(dat);
 
         String payloadPlain = payload.getPlain();
         String payloadSecure = payload.getSecure();

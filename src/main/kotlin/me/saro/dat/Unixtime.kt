@@ -1,4 +1,4 @@
-package me.saro.dat.key
+package me.saro.dat
 
 class Unixtime {
     companion object {

@@ -1,16 +1,18 @@
 package test.kt
 
-import me.saro.dat.key.DatUtils.Companion.generateRandomBase62
-import me.saro.dat.key.crypto.CryptoAlgorithm
-import me.saro.dat.key.dat.DatKey
-import me.saro.dat.key.dat.DatKey.Companion.generate
-import me.saro.dat.key.signature.SignatureAlgorithm
+import me.saro.dat.DatUtils.Companion.generateRandomBase62
+import me.saro.dat.crypto.DatCryptoAlgorithm
+import me.saro.dat.dat.DatCertificate
+import me.saro.dat.dat.DatCertificate.Companion.generate
+import me.saro.dat.dat.DatManager.Companion.issue
+import me.saro.dat.dat.DatManager.Companion.parse
+import me.saro.dat.signature.DatSignatureAlgorithm
 import org.junit.jupiter.api.Test
 
 class DatPerformanceTest {
-    fun generate(signatureAlgorithm: SignatureAlgorithm, cryptoAlgorithm: CryptoAlgorithm): DatKey {
+    fun generate(signatureAlgorithm: DatSignatureAlgorithm, cryptoAlgorithm: DatCryptoAlgorithm): DatCertificate {
         return generate(
-            "0",
+            0,
             signatureAlgorithm,
             cryptoAlgorithm,
             System.currentTimeMillis() - 10,
@@ -24,26 +26,26 @@ class DatPerformanceTest {
         val plain = generateRandomBase62(100)
         val secure = generateRandomBase62(100)
 
-        println("plain : $plain")
-        println("secure : $secure")
+        println("plain : " + plain)
+        println("secure : " + secure)
 
-        for (signatureAlgorithm in SignatureAlgorithm.entries) {
-            for (cryptoAlgorithm in CryptoAlgorithm.entries) {
-                val key = generate(signatureAlgorithm, cryptoAlgorithm)
+        for (signatureAlgorithm in DatSignatureAlgorithm.entries) {
+            for (cryptoAlgorithm in DatCryptoAlgorithm.entries) {
+                val cert = generate(signatureAlgorithm, cryptoAlgorithm)
                 val tag: String = signatureAlgorithm.name + "/" + cryptoAlgorithm.name
                 var dat = ""
 
                 var time = System.currentTimeMillis()
-                repeat(10000) {
-                    dat = key.toDat(plain, secure)
+                for (i in 0..9999) {
+                    dat = issue(cert, plain, secure)
                 }
-                println(tag + " toDat * 10000 : " + (System.currentTimeMillis() - time) + " ms")
+                println(tag + " issue * 10000 : " + (System.currentTimeMillis() - time) + " ms")
 
                 time = System.currentTimeMillis()
-                repeat(10000) {
-                    key.toPayload(dat)
+                for (i in 0..9999) {
+                    parse(cert, dat)
                 }
-                println(tag + " toPayload * 10000 : " + (System.currentTimeMillis() - time) + " ms")
+                println(tag + " parse * 10000 : " + (System.currentTimeMillis() - time) + " ms")
             }
         }
     }

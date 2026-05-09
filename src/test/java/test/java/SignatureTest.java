@@ -1,8 +1,8 @@
 package test.java;
 
-import me.saro.dat.key.DatUtils;
-import me.saro.dat.key.signature.SignatureAlgorithm;
-import me.saro.dat.key.signature.SignatureKey;
+import me.saro.dat.DatUtils;
+import me.saro.dat.signature.DatSignatureAlgorithm;
+import me.saro.dat.signature.DatSignatureKey;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -10,14 +10,14 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class SignatureTest {
 
-    public void unit(SignatureAlgorithm alg) {
+    public void unit(DatSignatureAlgorithm alg) {
         byte[] body = DatUtils.generateRandomBase62(100).getBytes();
-        SignatureKey signatureKey = SignatureKey.generate(alg);
-        SignatureKey signatureKeyFail = SignatureKey.generate(alg);
+        DatSignatureKey signatureKey = DatSignatureKey.generate(alg);
+        DatSignatureKey signatureKeyFail = DatSignatureKey.generate(alg);
         byte[] signingKeyBytes = signatureKey.getSigningKeyBytes();
         byte[] verifyingKeyBytes = signatureKey.getVerifyingKeyBytes();
-        SignatureKey signatureKeyFrom = SignatureKey.fromBytes(alg, signingKeyBytes, verifyingKeyBytes);
-        SignatureKey verifyKeyFrom = SignatureKey.fromBytes(alg, null, verifyingKeyBytes);
+        DatSignatureKey signatureKeyFrom = DatSignatureKey.fromBytes(alg, signingKeyBytes, verifyingKeyBytes);
+        DatSignatureKey verifyKeyFrom = DatSignatureKey.fromBytes(alg, null, verifyingKeyBytes);
 
         var sign = signatureKeyFrom.sign(body);
 
@@ -29,10 +29,10 @@ public class SignatureTest {
 
     @Test
     public void test() {
-        for (var alg : SignatureAlgorithm.getEntries()) {
-            System.out.println("sign test - " + alg.name());
+        for (var algorithm : DatSignatureAlgorithm.getEntries()) {
+            System.out.println("sign test - " + algorithm.name());
             for (var i = 0; i < 20; i++) {
-                unit(alg);
+                unit(algorithm);
             }
         }
     }
