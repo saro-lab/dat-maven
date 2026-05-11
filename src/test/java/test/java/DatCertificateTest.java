@@ -39,8 +39,8 @@ public class DatCertificateTest {
         assert secure.equals(payload.getSecure());
         assert plain.equals(payload2.getPlain());
         assert secure.equals(payload2.getSecure());
-        assert id == newCert.getCertificateId();
-        assert id == readCert.getCertificateId();
+        assert id == newCert.getCid();
+        assert id == readCert.getCid();
         assertThrows(Exception.class, () -> DatManager.parse(failCert, dat));
     }
 

@@ -13,7 +13,7 @@ plugins {
 
 val datGroupId = "me.saro"
 val datArtifactId = "dat"
-val datVersion = "3.0.0"
+val datVersion = "3.1.0"
 
 group = datGroupId
 version = datVersion
@@ -37,11 +37,14 @@ java {
 }
 
 tasks.withType<Test> {
-	useJUnitPlatform()
+	useJUnitPlatform {
+        excludeTags("benchmark")
+    }
 	testLogging {
 		events("passed", "failed", "skipped")
 		showStandardStreams = true
 	}
+    jvmArgs("-XX:+TieredCompilation")
 }
 
 tasks.withType<Javadoc>().configureEach {
@@ -143,10 +146,4 @@ tasks.named("publish").configure {
 
 signing {
     sign(publishing.publications["maven"])
-}
-
-tasks.test {
-    jvmArgs(
-        "-XX:+TieredCompilation"
-    )
 }

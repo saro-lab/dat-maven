@@ -8,7 +8,7 @@ class Dat(
     val dat: String,
 ): Cloneable {
     val expire: Long
-    val certificateId: Long
+    val cid: Long
     internal val plainBytes: ByteArray
     internal val secureBytes: ByteArray
     internal val signatureBytes: ByteArray
@@ -24,7 +24,7 @@ class Dat(
             if (expire < Unixtime.now()) {
                 throw DatException("Expired Dat")
             }
-            this.certificateId = parts[1].toULong(16).toLong()
+            this.cid = parts[1].toULong(16).toLong()
             this.plainBytes = DatUtils.decodeBase64Url(parts[2])
             this.secureBytes = DatUtils.decodeBase64Url(parts[3])
             this.signatureBytes = DatUtils.decodeBase64Url(parts[4])

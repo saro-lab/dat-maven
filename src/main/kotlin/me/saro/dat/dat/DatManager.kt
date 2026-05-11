@@ -31,7 +31,7 @@ class DatManager private constructor(
 
     fun parse(dat: Dat): Payload {
         lock.read {
-            return parse(findUnsafe(dat.certificateId), dat)
+            return parse(findUnsafe(dat.cid), dat)
         }
     }
 
@@ -41,7 +41,7 @@ class DatManager private constructor(
 
     fun parseWithoutVerifying(dat: Dat): Payload {
         lock.read {
-            return parseWithoutVerifying(findUnsafe(dat.certificateId), dat)
+            return parseWithoutVerifying(findUnsafe(dat.cid), dat)
         }
     }
 
@@ -49,12 +49,12 @@ class DatManager private constructor(
         return parseWithoutVerifying(Dat(dat))
     }
 
-    internal fun findUnsafe(certificateId: Long): DatCertificate {
-        return certificates.find { it.certificateId == certificateId } ?: throw DatException("Not Found certificate id: $certificateId")
+    internal fun findUnsafe(cid: Long): DatCertificate {
+        return certificates.find { it.cid == cid } ?: throw DatException("Not Found CID(Certificate ID): $cid")
     }
 
     fun exportsIds(): List<Long> {
-        return lock.read { certificates.map { it.certificateId } }
+        return lock.read { certificates.map { it.cid } }
     }
 
     fun exportsCertificates(): List<DatCertificate> {
@@ -82,8 +82,8 @@ class DatManager private constructor(
     }
 
     fun imports(certificates: List<DatCertificate>, clear: Boolean) {
-        if (certificates.size != certificates.distinctBy { it.certificateId }.size) {
-            throw IllegalArgumentException("Duplicate certificate id")
+        if (certificates.size != certificates.distinctBy { it.cid }.size) {
+            throw IllegalArgumentException("Duplicate CID(Certificate ID)")
         }
 
         val list = if (clear) {
@@ -131,7 +131,7 @@ class DatManager private constructor(
             bw.write(DOT)
 
             // kid
-            bw.write(certificate.certificateIdHex)
+            bw.write(certificate.cidHex)
             bw.write(DOT)
 
             // plain

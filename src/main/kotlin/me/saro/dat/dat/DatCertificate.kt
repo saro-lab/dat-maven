@@ -10,14 +10,14 @@ import me.saro.dat.signature.DatSignatureKey
 import me.saro.dat.signature.DatSignatureKeyOutOption
 
 class DatCertificate private constructor(
-    val certificateId: Long,
+    val cid: Long,
     internal val signatureKey: DatSignatureKey,
     internal val cryptoKey: DatCryptoKey,
     internal val datIssueBegin: Long,
     internal val datIssueEnd: Long,
     internal val datTtl: Long,
 ): Cloneable {
-    internal val certificateIdHex = certificateId.toString(16).toByteArray()
+    internal val cidHex = cid.toString(16).toByteArray()
 
     val expired: Boolean get() = datIssueEnd + datTtl < Unixtime.now()
 
@@ -36,12 +36,12 @@ class DatCertificate private constructor(
             DatSignatureKeyOutOption.VERIFYING -> "~${DatUtils.encodeBase64Url(signatureKey.getVerifyingKeyBytes())}"
         }
         val cryptKeyBase64 = DatUtils.encodeBase64Url(cryptoKey.toBytes())
-        return "${certificateId.toString(16)}.${signatureKey.algorithm()}.${signatureKeyBase64}.${cryptoKey.algorithm()}.${cryptKeyBase64}.${datIssueBegin}.${datIssueEnd}.${datTtl}"
+        return "${cid.toString(16)}.${signatureKey.algorithm()}.${signatureKeyBase64}.${cryptoKey.algorithm()}.${cryptKeyBase64}.${datIssueBegin}.${datIssueEnd}.${datTtl}"
     }
 
     public override fun clone(): DatCertificate {
         return DatCertificate(
-            certificateId,
+            cid,
             signatureKey.clone(),
             cryptoKey.clone(),
             datIssueBegin,
@@ -52,20 +52,20 @@ class DatCertificate private constructor(
 
     override fun equals(other: Any?): Boolean {
         if (other is DatCertificate) {
-            return other.certificateId == this.certificateId
+            return other.cid == this.cid
         }
         return false
     }
 
     override fun hashCode(): Int {
-        return certificateId.hashCode()
+        return cid.hashCode()
     }
 
     companion object {
         @JvmStatic
-        fun generate(certificateId: Long, signatureAlgorithm: DatSignatureAlgorithm, cryptoAlgorithm: DatCryptoAlgorithm, datIssueBegin: Long, datIssueEnd: Long, datTtl: Long): DatCertificate {
+        fun generate(cid: Long, signatureAlgorithm: DatSignatureAlgorithm, cryptoAlgorithm: DatCryptoAlgorithm, datIssueBegin: Long, datIssueEnd: Long, datTtl: Long): DatCertificate {
             return DatCertificate(
-                certificateId,
+                cid,
                 DatSignatureKey.generate(signatureAlgorithm),
                 DatCryptoKey.generate(cryptoAlgorithm),
                 datIssueBegin,
@@ -75,9 +75,9 @@ class DatCertificate private constructor(
         }
 
         @JvmStatic
-        fun new(certificateId: Long, signatureKey: DatSignatureKey, cryptoKey: DatCryptoKey, datIssueBegin: Long, datIssueEnd: Long, datTtl: Long): DatCertificate {
+        fun new(cid: Long, signatureKey: DatSignatureKey, cryptoKey: DatCryptoKey, datIssueBegin: Long, datIssueEnd: Long, datTtl: Long): DatCertificate {
             return DatCertificate(
-                certificateId,
+                cid,
                 signatureKey,
                 cryptoKey,
                 datIssueBegin,
@@ -91,7 +91,7 @@ class DatCertificate private constructor(
             try {
                 val parts: List<String> = format.split(".")
                 if (parts.size == 8) {
-                    val certificateId = parts[0].toULong(16).toLong()
+                    val cid = parts[0].toULong(16).toLong()
                     val signatureAlgorithm = DatSignatureAlgorithm.valueOf(parts[1])
                     val signatureKeyStr = parts[2].split('~')
                     val signatureKey = when (signatureKeyStr.size) {
@@ -102,7 +102,7 @@ class DatCertificate private constructor(
                     val cryptAlgorithm = DatCryptoAlgorithm.valueOf(parts[3])
                     val cryptoKey = DatCryptoKey.fromBytes(cryptAlgorithm, DatUtils.decodeBase64Url(parts[4]))
                     return DatCertificate(
-                        certificateId,
+                        cid,
                         signatureKey,
                         cryptoKey,
                         parts[5].toULong().toLong(),

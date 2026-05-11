@@ -28,7 +28,7 @@ class DatCertificateTest {
 
         val dat = issue(newCert, plain, secure)
         val dat2 = issue(newCert, plain.toByteArray(StandardCharsets.UTF_8), secure.toByteArray(StandardCharsets.UTF_8))
-        println(tag + ": " + dat)
+        println("$tag: $dat")
 
         val payload = parse(readCert, dat)
         val payload2 = parse(readCert, dat2)
@@ -38,8 +38,8 @@ class DatCertificateTest {
         assert(secure == payload.secure)
         assert(plain == payload2.plain)
         assert(secure == payload2.secure)
-        assert(id == newCert.certificateId)
-        assert(id == readCert.certificateId)
+        assert(id == newCert.cid)
+        assert(id == readCert.cid)
         Assertions.assertThrows(Exception::class.java, { parse(failCert, dat) })
     }
 
