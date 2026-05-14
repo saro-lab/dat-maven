@@ -62,7 +62,7 @@ f000000000000000.P521.ARCdnmF9-acJNWdNlML9H6qNxiyJXEiTBIb8_5s8VwCquePPKOlhlYZNmm
             assert plain.equals(payload.getPlain());
             assert secure.equals(payload.getSecure());
             System.out.println("PASS " + dat);
-            System.out.println("PASS " + payload);
+            System.out.println("PASS " + payload.toUnsafeString());
         }
     }
 }

@@ -62,7 +62,7 @@ f000000000000000.P521.ARCdnmF9-acJNWdNlML9H6qNxiyJXEiTBIb8_5s8VwCquePPKOlhlYZNmm
             assert(plain == payload.plain)
             assert(secure == payload.secure)
             println("PASS " + dat)
-            println("PASS " + payload)
+            println("PASS " + payload.toUnsafeString())
         }
     }
 }
