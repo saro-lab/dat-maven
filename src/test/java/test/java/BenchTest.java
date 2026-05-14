@@ -7,7 +7,6 @@ import me.saro.dat.dat.DatCertificate;
 import me.saro.dat.dat.DatManager;
 import me.saro.dat.dat.Payload;
 import me.saro.dat.signature.DatSignatureAlgorithm;
-import org.junit.jupiter.api.Test;
 
 import java.util.List;
 import java.util.stream.IntStream;

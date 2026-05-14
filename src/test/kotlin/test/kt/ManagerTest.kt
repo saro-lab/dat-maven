@@ -11,7 +11,7 @@ import me.saro.dat.signature.DatSignatureKeyOutOption
 import org.junit.jupiter.api.Test
 import java.util.List
 
-class DatManagerTest {
+class ManagerTest {
     fun generate(
         kid: Long,
         signatureAlgorithm: DatSignatureAlgorithm,

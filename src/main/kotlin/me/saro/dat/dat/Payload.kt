@@ -8,6 +8,6 @@ class Payload(
     val secure: String get() = String(secureBytes, Charsets.UTF_8)
 
     override fun toString(): String {
-        return "$plain/$secure"
+        return "$plain $secure"
     }
 }

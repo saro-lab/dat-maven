@@ -6,6 +6,7 @@ import me.saro.dat.crypto.DatCryptoKey.Companion.fromBytes
 import me.saro.dat.crypto.DatCryptoKey.Companion.generate
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.function.Executable
 
 class CryptoTest {
     fun unit(alg: DatCryptoAlgorithm) {
@@ -19,7 +20,7 @@ class CryptoTest {
 
         assert(cryptoKey.decrypt(encrypted).contentEquals(body))
         assert(cryptoKeyFrom.decrypt(encrypted).contentEquals(body))
-        Assertions.assertThrows(Exception::class.java, { cryptoKeyFail.decrypt(encrypted) })
+        Assertions.assertThrows(Exception::class.java, Executable { cryptoKeyFail.decrypt(encrypted) })
     }
 
     @Test

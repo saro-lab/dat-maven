@@ -38,7 +38,7 @@ class BenchTest {
             println(pre + "Issue * " + dats.size + " : " + (System.currentTimeMillis() - time) + "ms")
 
             time = System.currentTimeMillis()
-            val dat = dats[0]
+            val dat = dats.get(0)
             val payloads = stream(multiThread, loop)
                 .mapToObj<Payload>(IntFunction { i: Int -> parse(certificate, dat) })
                 .toList()
@@ -57,8 +57,8 @@ class BenchTest {
         val plain = generateRandomBase62(100)
         val secure = generateRandomBase62(100)
 
-        println("Plain : $plain")
-        println("Secure : $secure")
+        println("Plain : " + plain)
+        println("Secure : " + secure)
 
         val certificates: MutableList<DatCertificate> = DatSignatureAlgorithm.entries.stream()
             .flatMap<DatCertificate> { sa: DatSignatureAlgorithm? ->

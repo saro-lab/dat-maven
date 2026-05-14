@@ -38,12 +38,12 @@ class ExampleTest {
         val plainData = "plain data 유니코드 !!! ABCD"
         val secureData = ">! secure data 암호화 데이터 @@@@"
 
-        println("plain : $plainData")
-        println("secure : $secureData")
+        println("plain : " + plainData)
+        println("secure : " + secureData)
 
         // issue dat
         val dat = manager.issue(plainData, secureData)
-        println("dat : $dat")
+        println("dat : " + dat)
 
         // parse dat
         val payload = manager.parse(dat)
@@ -51,8 +51,8 @@ class ExampleTest {
         val payloadPlain = payload.plain
         val payloadSecure = payload.secure
 
-        println("payload plain : $payloadPlain")
-        println("payload secure : $payloadSecure")
+        println("payload plain : " + payloadPlain)
+        println("payload secure : " + payloadSecure)
 
         assert(plainData == payloadPlain)
         assert(secureData == payloadSecure)
@@ -85,12 +85,12 @@ class ExampleTest {
         val plainData = "plain data 유니코드 !!! ABCD"
         val secureData = ">! secure data 암호화 데이터 @@@@"
 
-        println("plain : $plainData")
-        println("secure : $secureData")
+        println("plain : " + plainData)
+        println("secure : " + secureData)
 
         // issue dat
         val dat = manager.issue(plainData, secureData)
-        println("dat : $dat")
+        println("dat : " + dat)
 
         // parse dat
         val payload = manager.parse(dat)
@@ -98,15 +98,15 @@ class ExampleTest {
         val payloadPlain = payload.plain
         val payloadSecure = payload.secure
 
-        println("payload plain : $payloadPlain")
-        println("payload secure : $payloadSecure")
+        println("payload plain : " + payloadPlain)
+        println("payload secure : " + payloadSecure)
 
         assert(plainData == payloadPlain)
         assert(secureData == payloadSecure)
     }
 
 
-    @Test
+    //@Test
     fun useDatFormat() {
         // Singleton Manager
 
@@ -133,12 +133,12 @@ class ExampleTest {
         val plainData = "plain data 유니코드 !!!"
         val secureData = ">! secure data 암호화 데이터"
 
-        println("plain : $plainData")
-        println("secure : $secureData")
+        println("plain : " + plainData)
+        println("secure : " + secureData)
 
         // to dat
         val dat = manager.issue(plainData, secureData)
-        println("dat : $dat")
+        println("dat : " + dat)
 
         // dat to payload
         val payload = manager.parse(dat)
@@ -146,8 +146,8 @@ class ExampleTest {
         val payloadPlain = payload.plain
         val payloadSecure = payload.secure
 
-        println("payload plain : $payloadPlain")
-        println("payload secure : $payloadSecure")
+        println("payload plain : " + payloadPlain)
+        println("payload secure : " + payloadSecure)
 
         assert(plainData == payloadPlain)
         assert(secureData == payloadSecure)

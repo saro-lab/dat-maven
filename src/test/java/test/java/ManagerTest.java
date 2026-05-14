@@ -12,7 +12,7 @@ import org.junit.jupiter.api.Test;
 import java.util.ArrayList;
 import java.util.List;
 
-public class DatManagerTest {
+public class ManagerTest {
 
     public DatCertificate generate(long kid, DatSignatureAlgorithm signatureAlgorithm, DatCryptoAlgorithm cryptoAlgorithm) {
         return DatCertificate.generate(

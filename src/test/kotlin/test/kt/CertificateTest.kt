@@ -11,9 +11,10 @@ import me.saro.dat.signature.DatSignatureAlgorithm
 import me.saro.dat.signature.DatSignatureKeyOutOption
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.function.Executable
 import java.nio.charset.StandardCharsets
 
-class DatCertificateTest {
+class CertificateTest {
     fun unit(failCert: DatCertificate, signatureAlgorithm: DatSignatureAlgorithm, cryptoAlgorithm: DatCryptoAlgorithm) {
         val tag = "dat." + signatureAlgorithm.name + "." + cryptoAlgorithm.name
 
@@ -28,7 +29,7 @@ class DatCertificateTest {
 
         val dat = issue(newCert, plain, secure)
         val dat2 = issue(newCert, plain.toByteArray(StandardCharsets.UTF_8), secure.toByteArray(StandardCharsets.UTF_8))
-        println("$tag: $dat")
+        println(tag + ": " + dat)
 
         val payload = parse(readCert, dat)
         val payload2 = parse(readCert, dat2)
@@ -40,7 +41,7 @@ class DatCertificateTest {
         assert(secure == payload2.secure)
         assert(id == newCert.cid)
         assert(id == readCert.cid)
-        Assertions.assertThrows(Exception::class.java, { parse(failCert, dat) })
+        Assertions.assertThrows(Exception::class.java, Executable { parse(failCert, dat) })
     }
 
 

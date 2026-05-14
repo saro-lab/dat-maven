@@ -115,7 +115,7 @@ class DatCertificate private constructor(
                     throw e
                 }
             }
-            throw DatException("Invalid Dat Key Format")
+            throw DatException("Invalid Dat Certificate Format")
         }
     }
 }

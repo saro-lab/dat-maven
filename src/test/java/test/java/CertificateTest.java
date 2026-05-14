@@ -13,7 +13,7 @@ import java.nio.charset.StandardCharsets;
 
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-public class DatCertificateTest {
+public class CertificateTest {
 
     public void unit(DatCertificate failCert, DatSignatureAlgorithm signatureAlgorithm, DatCryptoAlgorithm cryptoAlgorithm) {
         String tag = "dat." + signatureAlgorithm.name() + "." + cryptoAlgorithm.name();
