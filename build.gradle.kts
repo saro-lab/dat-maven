@@ -13,7 +13,7 @@ plugins {
 
 val datGroupId = "me.saro"
 val datArtifactId = "dat"
-val datVersion = "3.2.0"
+val datVersion = "3.2.1"
 
 group = datGroupId
 version = datVersion
@@ -99,8 +99,12 @@ publishing {
 
             pom {
                 name.set("SARO DAT")
-                description.set("SARO DAT")
+                description.set("DAT - Distributed Access Token (dat, distributed, access, token, web session)")
                 url.set("https://dat.saro.me")
+
+                properties.set(mapOf(
+                    "keywords" to "dat, distributed, access, token, web_session"
+                ))
 
                 licenses {
                     license {
