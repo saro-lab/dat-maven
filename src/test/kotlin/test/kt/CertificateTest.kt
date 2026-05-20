@@ -8,7 +8,7 @@ import me.saro.dat.dat.DatCertificate.Companion.parse
 import me.saro.dat.dat.DatManager.Companion.issue
 import me.saro.dat.dat.DatManager.Companion.parse
 import me.saro.dat.signature.DatSignatureAlgorithm
-import me.saro.dat.signature.DatSignatureKeyOutOption
+import me.saro.dat.signature.DatSignatureKeyExportOption
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.function.Executable
@@ -23,7 +23,7 @@ class CertificateTest {
 
         val id = (Math.random() * Long.MAX_VALUE).toLong()
         val newCert = generate(id, signatureAlgorithm, cryptoAlgorithm)
-        val newCertStr = newCert.exports(DatSignatureKeyOutOption.FULL)
+        val newCertStr = newCert.exports(DatSignatureKeyExportOption.PAIR)
 
         val readCert = parse(newCertStr)
 

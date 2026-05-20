@@ -7,7 +7,7 @@ import me.saro.dat.crypto.DatCryptoKey
 import me.saro.dat.exception.DatException
 import me.saro.dat.signature.DatSignatureAlgorithm
 import me.saro.dat.signature.DatSignatureKey
-import me.saro.dat.signature.DatSignatureKeyOutOption
+import me.saro.dat.signature.DatSignatureKeyExportOption
 
 class DatCertificate private constructor(
     val cid: Long,
@@ -29,11 +29,11 @@ class DatCertificate private constructor(
         return signatureKey.hasSigningKey()
     }
 
-    fun exports(signatureKeyOutOption: DatSignatureKeyOutOption): String {
-        val signatureKeyBase64 = when (signatureKeyOutOption) {
-            DatSignatureKeyOutOption.FULL -> "${DatUtils.encodeBase64Url(signatureKey.getSigningKeyBytes()!!)}~${DatUtils.encodeBase64Url(signatureKey.getVerifyingKeyBytes())}"
-            DatSignatureKeyOutOption.SIGNING -> DatUtils.encodeBase64Url(signatureKey.getSigningKeyBytes()!!)
-            DatSignatureKeyOutOption.VERIFYING -> "~${DatUtils.encodeBase64Url(signatureKey.getVerifyingKeyBytes())}"
+    fun exports(signatureKeyExportOption: DatSignatureKeyExportOption): String {
+        val signatureKeyBase64 = when (signatureKeyExportOption) {
+            DatSignatureKeyExportOption.PAIR -> "${DatUtils.encodeBase64Url(signatureKey.getSigningKeyBytes()!!)}~${DatUtils.encodeBase64Url(signatureKey.getVerifyingKeyBytes())}"
+            DatSignatureKeyExportOption.SIGNING -> DatUtils.encodeBase64Url(signatureKey.getSigningKeyBytes()!!)
+            DatSignatureKeyExportOption.VERIFYING -> "~${DatUtils.encodeBase64Url(signatureKey.getVerifyingKeyBytes())}"
         }
         val cryptKeyBase64 = DatUtils.encodeBase64Url(cryptoKey.toBytes())
         return "${cid.toString(16)}.${signatureKey.algorithm()}.${signatureKeyBase64}.${cryptoKey.algorithm()}.${cryptKeyBase64}.${datIssueBegin}.${datIssueEnd}.${datTtl}"

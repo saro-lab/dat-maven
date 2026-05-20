@@ -6,7 +6,7 @@ import me.saro.dat.dat.DatCertificate;
 import me.saro.dat.dat.DatManager;
 import me.saro.dat.dat.Payload;
 import me.saro.dat.signature.DatSignatureAlgorithm;
-import me.saro.dat.signature.DatSignatureKeyOutOption;
+import me.saro.dat.signature.DatSignatureKeyExportOption;
 import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
@@ -44,7 +44,7 @@ public class ManagerTest {
         }
 
         DatManager readManager = DatManager.newInstance();
-        readManager.imports(manager.exports(DatSignatureKeyOutOption.FULL), true);
+        readManager.imports(manager.exports(DatSignatureKeyExportOption.PAIR), true);
 
         for (String dat : dats) {
             Payload payload = readManager.parse(dat);

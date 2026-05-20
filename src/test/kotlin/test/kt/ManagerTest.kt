@@ -7,7 +7,7 @@ import me.saro.dat.dat.DatCertificate.Companion.generate
 import me.saro.dat.dat.DatManager.Companion.issue
 import me.saro.dat.dat.DatManager.Companion.newInstance
 import me.saro.dat.signature.DatSignatureAlgorithm
-import me.saro.dat.signature.DatSignatureKeyOutOption
+import me.saro.dat.signature.DatSignatureKeyExportOption
 import org.junit.jupiter.api.Test
 import java.util.List
 
@@ -46,7 +46,7 @@ class ManagerTest {
         }
 
         val readManager = newInstance()
-        readManager.imports(manager.exports(DatSignatureKeyOutOption.FULL), true)
+        readManager.imports(manager.exports(DatSignatureKeyExportOption.PAIR), true)
 
         for (dat in dats) {
             val payload = readManager.parse(dat)
