@@ -8,19 +8,26 @@
 
 ### [Java / Kotlin Example](https://dat.saro.me/--/libs/maven-me.saro-dat)
 
-## support signature algorithm
-| name   | algorithm  |
-|--------|------------|
-| P256   | secp256r1  |
-| P384   | secp384r1  |
-| P521   | secp521r1  |
 
-## support crypto algorithm
-| name       | algorithm                   |
-|------------|-----------------------------|
-| AES128GCMN | aes-128-gcm n(nonce + body) |
-| AES256GCMN | aes-256-cbc n(nonce + body) |
+## Support
+> Version 4.0.0 is currently under development.
+> It is not compatible with versions below 4.0.0, so please install version 4.0.0 or higher.
+### Signature algorithm
+| name            | note                  |
+|-----------------|-----------------------|
+| ECDSA-P256      | = secp256r1           |
+| ECDSA-P384      | = secp384r1           |
+| ECDSA-P521      | = secp521r1           |
+| HMAC-SHA256-MFS | = 256Bit Fixed Secret |
+| HMAC-SHA384-MFS | = 384Bit Fixed Secret |
+| HMAC-SHA512-MFS | = 512Bit Fixed Secret |
+- MFS : Maximum(Same Bit) Fixed Secret
 
+### Crypto algorithm
+| name       | note                          |
+|------------|-------------------------------|
+| IV-AES128-GCM | (IV=NONCE:96BIT) + AES128 GCM |
+| IV-AES256-GCM | (IV=NONCE:96BIT) + AES256 GCM |
 
 # Performance
 - random plain and secure test
