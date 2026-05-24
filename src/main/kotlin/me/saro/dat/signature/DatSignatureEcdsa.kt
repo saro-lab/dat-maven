@@ -117,15 +117,13 @@ class DatSignatureEcdsa private constructor(
     }
 
     override fun exportKey(verifyOnly: Boolean): ByteArray {
-        if (verifyOnly && signingKey == null) {
-            throw DatException("verifyOnly: Is not Have Signing Key")
-        }
+        val vo = verifyOnly || signingKey == null
 
         val vk = (verifyingKey).q.getEncoded(false)
-        if (verifyOnly) {
+        if (vo) {
             return vk
         } else {
-            val key = (signingKey as BCECPrivateKey)
+            val key = (signingKey)
             val d = key.d
             val fieldSize = (getBitSize(algorithm) + 7) / 8
             val bytes = d.toByteArray()

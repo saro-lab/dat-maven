@@ -22,12 +22,12 @@ class DatCertificate private constructor(
     val expired: Boolean get() = (datIssueEnd + datTtl) < Unixtime.now().toULong()
 
     val issuable: Boolean get() {
-        return this.hasSigningKey() && Unixtime.now().toULong() in datIssueBegin..datIssueEnd
+        return this.signable() && Unixtime.now().toULong() in datIssueBegin..datIssueEnd
     }
 
     val cidLong: Long get() = cid.toLong()
 
-    fun hasSigningKey(): Boolean {
+    fun signable(): Boolean {
         return signature.signable()
     }
 

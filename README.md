@@ -9,8 +9,8 @@
 ### [Java / Kotlin Example](https://dat.saro.me/--/libs/maven-me.saro-dat)
 
 
-## Support
-### Signature algorithm
+## Support algorithm
+### Signature
 | name            | note                  |
 |-----------------|-----------------------|
 | ECDSA-P256      | = secp256r1           |
@@ -21,7 +21,7 @@
 | HMAC-SHA512-MFS | = 512Bit Fixed Secret |
 - MFS : Maximum(Same Bit) Fixed Secret
 
-### Crypto algorithm
+### Crypto
 | name       | note                          |
 |------------|-------------------------------|
 | IV-AES128-GCM | (IV=NONCE:96BIT) + AES128 GCM |

@@ -7,12 +7,15 @@ import me.saro.dat.exception.DatException
 class Dat(
     val dat: String,
 ): Cloneable {
-    val expire: ULong
-    val cid: ULong
+    internal val expire: ULong
+    internal val cid: ULong
     internal val plainBytes: ByteArray
     internal val secureBytes: ByteArray
     internal val signatureBytes: ByteArray
     internal val body: ByteArray
+
+    fun getCid(): Long = cid.toLong()
+    fun getExpire(): Long = expire.toLong()
 
     init {
         val parts = dat.split('.')
