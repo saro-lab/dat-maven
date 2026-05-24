@@ -1,34 +1,37 @@
-package test.java;
+package test.kt
 
-import me.saro.dat.crypto.DatCryptoAlgorithm;
-import me.saro.dat.dat.DatCertificate;
-import me.saro.dat.dat.DatManager;
-import me.saro.dat.dat.Payload;
-import me.saro.dat.signature.DatSignatureAlgorithm;
-import org.junit.jupiter.api.Test;
+import me.saro.dat.crypto.DatCryptoAlgorithm
+import me.saro.dat.dat.DatCertificate
+import me.saro.dat.dat.DatCertificate.Companion.generate
+import me.saro.dat.dat.DatManager.Companion.newInstance
+import me.saro.dat.signature.DatSignatureAlgorithm
+import org.junit.jupiter.api.Test
 
-public class HardTest {
-
-    public DatCertificate generate(long id, DatSignatureAlgorithm signatureAlgorithm, DatCryptoAlgorithm cryptoAlgorithm) {
-        return DatCertificate.generate(
-                id,
-                0,
-                32506358400L + 3600L,
-                32506358400L,
-                signatureAlgorithm,
-                cryptoAlgorithm
-        );
+class HardTest {
+    fun generate(
+        id: Long,
+        signatureAlgorithm: DatSignatureAlgorithm,
+        cryptoAlgorithm: DatCryptoAlgorithm
+    ): DatCertificate {
+        return generate(
+            id,
+            0,
+            32506358400L + 3600L,
+            32506358400L,
+            signatureAlgorithm,
+            cryptoAlgorithm
+        )
     }
 
 
     @Test
-    public void test() {
-        DatManager manager = DatManager.newInstance();
+    fun test() {
+        val manager = newInstance()
 
-        String plain = "Unicode 유니코드 ユニコード 万国码 يونيكود यूनिकोड Юникод 🦄💻";
-        String secure = "Ciphertext 암호문 暗号文 密文 Шифротекст Texte chiffré Geheimtext نص مشفر सिफरपाठ 🔐";
+        val plain = "Unicode 유니코드 ユニコード 万国码 يونيكود यूनिकोड Юникод 🦄💻"
+        val secure = "Ciphertext 암호문 暗号文 密文 Шифротекст Texte chiffré Geheimtext نص مشفر सिफरपाठ 🔐"
 
-        String certs = """
+        val certs = """
 0.0.32506362000.32506358400.HMAC-SHA256-MFS.IV-AES128-GCM.qJAPhAeRnxOPeR6acBQTt0ukGqmUNtlQX5co7HXJ6Yg.ofZMFCvJ8Y5gBY6vNHWF_Q
 a.0.32506362000.32506358400.HMAC-SHA256-MFS.IV-AES256-GCM.YjL8_kk2TOKbviSezPWZIsqniIyjPAHbhIeQrJypQrE.WTcgu6VnaLPxD4V-qpkwzpKPnhmApnFqb36G6YaPZ2U
 ab.0.32506362000.32506358400.HMAC-SHA384-MFS.IV-AES128-GCM.xus6DnD5PfVf33XYdLfyqRFBvZOefbHE6XD5QP0Trpu5iHKWTuLi-I6NVMsiXKKS.qhv66bDpHTG1KUhsv7AadA
@@ -47,9 +50,10 @@ abcedf0123456789.0.32506362000.32506358400.ECDSA-P521.IV-AES128-GCM.AeoVQa5ZchQT
 7fffffffffffffff.0.32506362000.32506358400.ECDSA-P521.IV-AES128-GCM.BAFvIDR0Rukj2aJIdlQe-5E3rOf2QKwVdfm1XpnNxjGC-zjobnA2FjZTjOJZQqlYZgzOnj_hQ_6dfQkxZlnlVHJ6owBJ5qVhq1Mq9kI1yjTRaUeWSodMO4QtWS_Crhv9RDNiCEMK1PlZR_uZjPBVU3Mc05-2cxFds1fR73IgWVlkuME7vw.xK4uHXR-5VoRTVFOku-doA
 ffffffffffffffff.0.32506362000.32506358400.ECDSA-P521.IV-AES256-GCM.AIhflCKBYhejBYyeJ7xeTzVyL_7nltHF4nM4KsNDJOxFE2erT7UdUGWJcn4-B9DVKUVA4qOhyQhHG4RfVH-OpEZ_BADh95OsPaDBCz4bvCdEwPABeeEjAGY4crrWNW0czNqkl190ZEjZZKWsr2Uv4WU1g5nY5I1u8tnrGA5ym4inYZ8buQD4N9_qORpCFL7topdIq6K3ybfyKatV_BZAp2OJ0OOACLYPDvOx3ML9Re7qRNTVncsHJzzlfLDIVvCMPLseTe8OSg.hQ5ha3Z6O4GCUkTulYN8qpeWkBMH41bnz081RrTL_4k
 f000000000000000.0.32506362000.32506358400.ECDSA-P521.IV-AES256-GCM.BACwvrucwjh5xfrc9RvBl1q3E3xsFi-FId0ZlpSkEMg3_DWR-euxeac9HIbn3zgj1emDhrNucDC8bJzQ1sn9YYtUcQFNrj0PLu1sy2dGUWWHcIt2V-v5yUvMxmk0VYDQ4QXTVIPc3aDydmKrRhqYuy7E6EVfczxayg8yw97aHVBTKE3TkA.BaicaG9RsAxbVh75I_fW02Qv_9ws3T7jIq8R5YShC90
-""".trim();
 
-        String[] datList = """
+""".trimIndent().trim { it <= ' ' }
+
+        val datList = """
 34285962080.0.VW5pY29kZSDsnKDri4jsvZTrk5wg44Om44OL44Kz44O844OJIOS4h-WbveeggSDZitmI2YbZitmD2YjYryDgpK_gpYLgpKjgpL_gpJXgpYvgpKEg0K7QvdC40LrQvtC0IPCfpoTwn5K7.9fatat3QsSMDFbRaXVa0AhdOlfI6Hza-KXHeO8-JQdfdnljME_ShMXicVtmII5AjiS24TeZMcAoPaRyxwouIUWXZyqwjeIfcvGI_wdWRLSIVgdGqk3xtxRfvmnWj35ymUQ6LxkV5RLzTre1fmC1UJI6yyiGnvNS91kZBodsfxIlkQb670crqJQh3yd_o8z3bG-_rZDiDtw2s.VQMvWd7OxH0su7t2Q0M9DbGFdp1H9f2Clblewn3EL_8
 34285962080.a.VW5pY29kZSDsnKDri4jsvZTrk5wg44Om44OL44Kz44O844OJIOS4h-WbveeggSDZitmI2YbZitmD2YjYryDgpK_gpYLgpKjgpL_gpJXgpYvgpKEg0K7QvdC40LrQvtC0IPCfpoTwn5K7.ziiPJLOTLLDplGuwXlTpU29fqaFOV0RYrEPrY5uVldHhA4OHhU679u2qmf4AbcufETSrCS7KURel4OF110Ybmcu6w2_dShVr6GIs3XNJJGC46qbEUY6K0t5LwZMTbNaX_tJrd4CzDNL4AjDE8OKPcBFvnV_PQNRhRq5dFcJsNhUC8QDnfY2IwNXSuaughUy9cp1ch-gaOcxk.Woox76u5QKOvIpsEgnRIyds3MmeXWjhBTGylXsNfr_I
 34285962080.ab.VW5pY29kZSDsnKDri4jsvZTrk5wg44Om44OL44Kz44O844OJIOS4h-WbveeggSDZitmI2YbZitmD2YjYryDgpK_gpYLgpKjgpL_gpJXgpYvgpKEg0K7QvdC40LrQvtC0IPCfpoTwn5K7.06XxkBDSHZSSo5QX2cbFcDA4K9RgmetHdHb37zhDVxjPuYGBrPcZqc2XR-xUakS4IpQhu7wqs-sJ8yVt7DidwlSkfIYUyH0qCwAiWi9TjpOKsamYFzkgb7dN9PSBTCmL5su6KHEms-XLzSBXn2hnJ4vrF-eq5BBqPeGUJWyXGNr78xHeZFqYkhcoNIRBaCgClEldIgsWooBC.3tcnZ9IFkQbxtw1R03yJdIVzR8aagovQdZZXavHpxnNd6NLAB2esdQyzASRk094u
@@ -68,16 +72,17 @@ f000000000000000.0.32506362000.32506358400.ECDSA-P521.IV-AES256-GCM.BACwvrucwjh5
 34285962080.7fffffffffffffff.VW5pY29kZSDsnKDri4jsvZTrk5wg44Om44OL44Kz44O844OJIOS4h-WbveeggSDZitmI2YbZitmD2YjYryDgpK_gpYLgpKjgpL_gpJXgpYvgpKEg0K7QvdC40LrQvtC0IPCfpoTwn5K7.iOCnxHyoEf4kSuwHUgcsypXh0DRIq4AsyX1kGUDlfIvTC-Xc_HEmPa3j72xElDA4nEhZWsU6MaDewt6dNV6XpMDnHqSxe5UUhQ8wCZwwbMCT6paGlE7H3weS5e1Mxg_ZYQ3UHmeiCdpUiRzLaokAeDB_nHg9kAjXJ2xT9QGYNAHl4NHeCk1iUP19XPmYSdXDOOJeIGhX18GQ.APmQomZmOEPkjuVCoo4NynulbAGeqWJ2CYdQwEfmhjDMnHm_q2T4RqVCJR0y8KkQrxnhHBqQ-UkfguOQZZsuRGVwABf1prj9PhIYiECFH96JLDUBEBzLnSK6zk2m--3WMCupQ2Sos3ZvdsYfgUmoSsK5SVP3BlVOYedeQixKCoPf2NFq
 34285962080.ffffffffffffffff.VW5pY29kZSDsnKDri4jsvZTrk5wg44Om44OL44Kz44O844OJIOS4h-WbveeggSDZitmI2YbZitmD2YjYryDgpK_gpYLgpKjgpL_gpJXgpYvgpKEg0K7QvdC40LrQvtC0IPCfpoTwn5K7.CB4sUN2OOwUCgCqJSc6o_rlnIuO7U_Oq7NobA4vroqlAUgf8DYjsWtLRFrQPVwMbENiFuiQJah2NkYZi1N_1VYj_AfHTjufIGs6oMkeQHLUSk2Ps5tJlwsbRYZepy5tkpgTFfAJCaCYiXxYhviqM17s5clfJ3EFbhK3kHmw_Gv3Xh2sJsVt_E6o-y_lo1oZ_OO1eC9Sga9k8.AartOe5JeQK8hqcDGYBfbIdY-kc8IWF4fWFrX28crwNtbxy2OKulw-jYsY5BqSW05Ekpt55eEvfMCwMZK-5nRMmwAK3-t_YtxmwzXXORipJC_hQH6gFKKj6PDRc3V-fWkQBS44op5XCsavwUzha_JDr4un5n9zFO6SQNz466MZhgcmqf
 34285962080.f000000000000000.VW5pY29kZSDsnKDri4jsvZTrk5wg44Om44OL44Kz44O844OJIOS4h-WbveeggSDZitmI2YbZitmD2YjYryDgpK_gpYLgpKjgpL_gpJXgpYvgpKEg0K7QvdC40LrQvtC0IPCfpoTwn5K7.TmxzY2YJ3OjIqoTjUBMaJt2jxpQ2drRgjSjJihKSJ-SkOQL6AWaW5j5_XGLg0CxJ8ac4FQOb4rt9Y7E-so1TI_dVQEVk8IeBovob6yQDx_dqpHrwfN7HfX-_D2GvgJb-R1syal2jKV4ESQsuhWrqaRl9_TcGkzDPKsTg2GDStf45FJ8fisPAECMtAUo3fVqPnGJcl0k7JXAX.AFxCzP8FerpzUx6TWKL-Sbj9C8wHWR5b1vHd_MFnd-2141T-vdgHlI94e2WkaxZv9T9vElbQMA7_JeuWOdKObygoAJCFJ53O-qX_xcaD5tbUTtDPEeWtlV0c9wulzN6ZvjEd2x_7Immj0tHk2ni2r7oKTH9pBPKfWC2fWrvCZMYtjX5M
-""".trim().split("\n");
 
-        manager.imports(certs, true);
+""".trimIndent().trim { it <= ' ' }.split("\n".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
 
-        for (String dat : datList) {
-            Payload payload = manager.parse(dat);
-            assert plain.equals(payload.getPlain());
-            assert secure.equals(payload.getSecure());
-            System.out.println("PASS " + dat);
-            System.out.println("PASS " + payload.toUnsafeString());
+        manager.imports(certs, true)
+
+        for (dat in datList) {
+            val payload = manager.parse(dat)
+            assert(plain == payload.plain)
+            assert(secure == payload.secure)
+            println("PASS " + dat)
+            println("PASS " + payload.toUnsafeString())
         }
     }
 }

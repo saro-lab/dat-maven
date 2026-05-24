@@ -26,11 +26,11 @@ public class ExampleTest {
 
         DatCertificate certificate = DatCertificate.generate(
                 0,
-                DatSignatureAlgorithm.P256,
-                DatCryptoAlgorithm.AES128GCMN,
-                unixTime - 1, // issue begin time (unix time)
-                unixTime + 1800, // issue end time (unix time)
-                1800 // DAT lifetime (seconds)
+        unixTime - 10,
+                200,
+                100,
+                DatSignatureAlgorithm.ECDSA_P256,
+                DatCryptoAlgorithm.IV_AES128_GCM
         );
 
         manager.imports(List.of(certificate), false);

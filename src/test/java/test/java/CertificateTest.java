@@ -15,8 +15,6 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 public class CertificateTest {
 
     public void unit(DatCertificate failCert, DatSignatureAlgorithm signatureAlgorithm, DatCryptoAlgorithm cryptoAlgorithm) {
-        String tag = "dat." + signatureAlgorithm.name() + "." + cryptoAlgorithm.name();
-
         String plain = DatUtils.generateRandomBase62(30);
         String secure = DatUtils.generateRandomBase62(30);
 
@@ -25,21 +23,21 @@ public class CertificateTest {
         String newCertStr = newCert.exports(false);
 
         DatCertificate readCert = DatCertificate.parse(newCertStr);
+        System.out.println("Cert " + newCertStr);
 
         String dat = DatManager.issue(newCert, plain, secure);
         String dat2 = DatManager.issue(newCert, plain.getBytes(StandardCharsets.UTF_8), secure.getBytes(StandardCharsets.UTF_8));
-        System.out.println(tag + ": " + dat);
 
         Payload payload = DatManager.parse(readCert, dat);
         Payload payload2 = DatManager.parse(readCert, dat2);
-        System.out.println(tag + ": " + payload.getPlain() + " / " + payload.getSecure());
+        System.out.println("DAT " + dat);
 
         assert plain.equals(payload.getPlain());
         assert secure.equals(payload.getSecure());
         assert plain.equals(payload2.getPlain());
         assert secure.equals(payload2.getSecure());
-        assert id == newCert.getCid();
-        assert id == readCert.getCid();
+        assert id == newCert.getCidLong();
+        assert id == readCert.getCidLong();
         assertThrows(Exception.class, () -> DatManager.parse(failCert, dat));
     }
 
@@ -47,17 +45,17 @@ public class CertificateTest {
     public DatCertificate generate(long id, DatSignatureAlgorithm signatureAlgorithm, DatCryptoAlgorithm cryptoAlgorithm) {
         return DatCertificate.generate(
                 id,
-                signatureAlgorithm,
-                cryptoAlgorithm,
                 System.currentTimeMillis() - 10,
-                System.currentTimeMillis() + 600,
-                60
+                200,
+                100,
+                signatureAlgorithm,
+                cryptoAlgorithm
         );
     }
 
     @Test
     public void test() {
-        var failCert = generate((long) (Math.random() * Long.MAX_VALUE),DatSignatureAlgorithm.P256, DatCryptoAlgorithm.AES128GCMN);
+        var failCert = generate((long) (Math.random() * Long.MAX_VALUE),DatSignatureAlgorithm.ECDSA_P256, DatCryptoAlgorithm.IV_AES128_GCM);
 
         for (var signatureAlgorithm : DatSignatureAlgorithm.getEntries()) {
             for (var cryptoAlgorithm : DatCryptoAlgorithm.getEntries()) {

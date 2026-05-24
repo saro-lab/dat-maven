@@ -7,6 +7,7 @@ import me.saro.dat.dat.DatCertificate;
 import me.saro.dat.dat.DatManager;
 import me.saro.dat.dat.Payload;
 import me.saro.dat.signature.DatSignatureAlgorithm;
+import org.junit.jupiter.api.Test;
 
 import java.util.List;
 import java.util.stream.IntStream;
@@ -23,8 +24,8 @@ public class BenchTest {
         System.out.println("\n" + (multiThread ? "Multi-Thread " : "Single-Thread "));
 
         for (DatCertificate certificate : certificates) {
-            String pre = certificate.getSignatureKey$dat().algorithm() + " " +
-                    certificate.getCryptoKey$dat().algorithm() + " ";
+            String pre = certificate.getSignature$dat().algorithm() + " " +
+                    certificate.getCrypto$dat().algorithm() + " ";
 
             long time = System.currentTimeMillis();
             List<String> dats = stream(multiThread, loop)
@@ -57,7 +58,7 @@ public class BenchTest {
 
         List<DatCertificate> certificates = DatSignatureAlgorithm.getEntries().stream().flatMap(sa ->
             DatCryptoAlgorithm.getEntries().stream().map(ca ->
-                DatCertificate.generate(0, sa, ca, now - 10, now + 600, 60)
+                    DatCertificate.generate(0, now - 10, 200, 100, sa, ca)
             )
         ).toList();
 

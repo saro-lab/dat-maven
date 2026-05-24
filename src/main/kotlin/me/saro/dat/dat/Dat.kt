@@ -7,8 +7,8 @@ import me.saro.dat.exception.DatException
 class Dat(
     val dat: String,
 ): Cloneable {
-    val expire: Long
-    val cid: Long
+    val expire: ULong
+    val cid: ULong
     internal val plainBytes: ByteArray
     internal val secureBytes: ByteArray
     internal val signatureBytes: ByteArray
@@ -20,11 +20,11 @@ class Dat(
             throw DatException("Invalid Dat Format")
         }
         try {
-            this.expire = parts[0].toLong()
-            if (expire < Unixtime.now()) {
+            this.expire = parts[0].toULong()
+            if (expire < Unixtime.now().toULong()) {
                 throw DatException("Expired Dat")
             }
-            this.cid = parts[1].toULong(16).toLong()
+            this.cid = parts[1].toULong(16)
             this.plainBytes = DatUtils.decodeBase64Url(parts[2])
             this.secureBytes = DatUtils.decodeBase64Url(parts[3])
             this.signatureBytes = DatUtils.decodeBase64Url(parts[4])

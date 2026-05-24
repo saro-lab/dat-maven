@@ -16,11 +16,11 @@ public class ManagerTest {
     public DatCertificate generate(long kid, DatSignatureAlgorithm signatureAlgorithm, DatCryptoAlgorithm cryptoAlgorithm) {
         return DatCertificate.generate(
                 kid,
-                signatureAlgorithm,
-                cryptoAlgorithm,
                 System.currentTimeMillis() - 10,
-                System.currentTimeMillis() + 600,
-                60
+                200,
+                100,
+                signatureAlgorithm,
+                cryptoAlgorithm
         );
     }
 

@@ -1,39 +1,37 @@
 package me.saro.dat.crypto
 
-import me.saro.dat.crypto.DatCryptoAlgorithm.AES128GCMN
-import me.saro.dat.crypto.DatCryptoAlgorithm.AES256GCMN
 import me.saro.dat.exception.DatException
 import java.security.SecureRandom
 import javax.crypto.Cipher
 import javax.crypto.spec.GCMParameterSpec
 import javax.crypto.spec.SecretKeySpec
 
-class DatCryptoKeyAesGcmNonce private constructor(
+class DatCryptoAesGcmNonce private constructor(
     private val algorithm: DatCryptoAlgorithm,
     private val key: SecretKeySpec,
-): DatCryptoKey {
+): DatCrypto {
     companion object {
         private const val NONCE_LEN = 12
 
         private fun getKeySize(algorithm: DatCryptoAlgorithm): Int {
             return when (algorithm) {
-                AES128GCMN -> 16
-                AES256GCMN -> 32
+                DatCryptoAlgorithm.IV_AES128_GCM -> 16
+                DatCryptoAlgorithm.IV_AES256_GCM -> 32
             }
         }
 
-        internal fun fromBytes(algorithm: DatCryptoAlgorithm, bytes: ByteArray): DatCryptoKey {
+        internal fun fromBytes(algorithm: DatCryptoAlgorithm, bytes: ByteArray): DatCrypto {
             if (bytes.size != getKeySize(algorithm)) {
                 throw DatException("Invalid $algorithm Key Size: ${bytes.size}")
             }
             val key = SecretKeySpec(bytes, "AES")
-            return DatCryptoKeyAesGcmNonce(algorithm, key)
+            return DatCryptoAesGcmNonce(algorithm, key)
         }
 
-        internal fun generate(algorithm: DatCryptoAlgorithm): DatCryptoKey {
+        internal fun generate(algorithm: DatCryptoAlgorithm): DatCrypto {
             val rand = ByteArray(getKeySize(algorithm)).apply { SecureRandom().nextBytes(this) }
             val key = SecretKeySpec(rand, "AES")
-            return DatCryptoKeyAesGcmNonce(algorithm, key)
+            return DatCryptoAesGcmNonce(algorithm, key)
         }
     }
 
@@ -65,7 +63,7 @@ class DatCryptoKeyAesGcmNonce private constructor(
         return cipher.doFinal(encrypted)
     }
 
-    override fun clone(): DatCryptoKey {
+    override fun clone(): DatCrypto {
         return fromBytes(algorithm, toBytes())
     }
 }

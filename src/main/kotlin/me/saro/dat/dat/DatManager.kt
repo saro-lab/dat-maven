@@ -48,12 +48,12 @@ class DatManager private constructor(
         return parseWithoutVerifying(Dat(dat))
     }
 
-    internal fun findUnsafe(cid: Long): DatCertificate {
+    internal fun findUnsafe(cid: ULong): DatCertificate {
         return certificates.find { it.cid == cid } ?: throw DatException("Not Found CID(Certificate ID): $cid")
     }
 
     fun exportsIds(): List<Long> {
-        return lock.read { certificates.map { it.cid } }
+        return lock.read { certificates.map { it.cid.toLong() } }
     }
 
     fun exportsCertificates(): List<DatCertificate> {
@@ -96,7 +96,7 @@ class DatManager private constructor(
             }
             inList.stream()
         }.filter { !it.expired }
-            .sorted(Comparator.comparingLong { it.datIssueEnd })
+            .sorted(Comparator.comparing { it.datIssueEnd })
             .collect(Collectors.toList())
 
         val issuer: DatCertificate? = list.findLast { it.issuable }?.clone()
@@ -125,12 +125,12 @@ class DatManager private constructor(
             val bw = ByteArrayOutputStream(((plain.size * 1.5).toInt() + (secure.size * 2)) + 300)
 
             // expire
-            val expire = (Unixtime.now() + certificate.datTtl).toString().toByteArray()
+            val expire = (Unixtime.now().toULong() + certificate.datTtl).toString().toByteArray()
             bw.write(expire)
             bw.write(DOT)
 
             // kid
-            bw.write(certificate.cidHex)
+            bw.write(certificate.cidHexBytes)
             bw.write(DOT)
 
             // plain
@@ -138,9 +138,9 @@ class DatManager private constructor(
             bw.write(DOT)
 
             // secure
-            bw.write(DatUtils.encodeBase64UrlBytes(certificate.cryptoKey.encrypt(secure)))
+            bw.write(DatUtils.encodeBase64UrlBytes(certificate.crypto.encrypt(secure)))
 
-            val sign: ByteArray = DatUtils.encodeBase64UrlBytes(certificate.signatureKey.sign(bw.toByteArray()))
+            val sign: ByteArray = DatUtils.encodeBase64UrlBytes(certificate.signature.sign(bw.toByteArray()))
             bw.write(DOT)
             bw.write(sign)
 
@@ -154,7 +154,7 @@ class DatManager private constructor(
 
         @JvmStatic
         fun parse(certificate: DatCertificate, dat: Dat): Payload {
-            if (!certificate.signatureKey.verify(dat.body, dat.signatureBytes)) {
+            if (!certificate.signature.verify(dat.body, dat.signatureBytes)) {
                 throw DatException("Invalid Dat Signature")
             }
             return parseWithoutVerifying(certificate, dat)
@@ -167,7 +167,7 @@ class DatManager private constructor(
 
         @JvmStatic
         fun parseWithoutVerifying(certificate: DatCertificate, dat: Dat): Payload {
-            return Payload(dat.plainBytes, certificate.cryptoKey.decrypt(dat.secureBytes))
+            return Payload(dat.plainBytes, certificate.crypto.decrypt(dat.secureBytes))
         }
 
 
