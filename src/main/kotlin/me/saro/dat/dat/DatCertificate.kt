@@ -7,7 +7,6 @@ import me.saro.dat.crypto.DatCryptoKey
 import me.saro.dat.exception.DatException
 import me.saro.dat.signature.DatSignatureAlgorithm
 import me.saro.dat.signature.DatSignatureKey
-import me.saro.dat.signature.DatSignatureKeyExportOption
 
 class DatCertificate private constructor(
     val cid: Long,
@@ -26,17 +25,13 @@ class DatCertificate private constructor(
     }
 
     fun hasSigningKey(): Boolean {
-        return signatureKey.hasSigningKey()
+        return signatureKey.signable()
     }
 
-    fun exports(signatureKeyExportOption: DatSignatureKeyExportOption): String {
-        val signatureKeyBase64 = when (signatureKeyExportOption) {
-            DatSignatureKeyExportOption.PAIR -> "${DatUtils.encodeBase64Url(signatureKey.getSigningKeyBytes()!!)}~${DatUtils.encodeBase64Url(signatureKey.getVerifyingKeyBytes())}"
-            DatSignatureKeyExportOption.SIGNING -> DatUtils.encodeBase64Url(signatureKey.getSigningKeyBytes()!!)
-            DatSignatureKeyExportOption.VERIFYING -> "~${DatUtils.encodeBase64Url(signatureKey.getVerifyingKeyBytes())}"
-        }
+    fun exports(verifyOnly: Boolean): String {
+        val signatureKeyBase64 = signatureKey.exportKey(verifyOnly)
         val cryptKeyBase64 = DatUtils.encodeBase64Url(cryptoKey.toBytes())
-        return "${cid.toString(16)}.${signatureKey.algorithm()}.${signatureKeyBase64}.${cryptoKey.algorithm()}.${cryptKeyBase64}.${datIssueBegin}.${datIssueEnd}.${datTtl}"
+        return "${cid.toString(16)}.${signatureKey.algorithm()}.$signatureKeyBase64.${cryptoKey.algorithm()}.${cryptKeyBase64}.${datIssueBegin}.${datIssueEnd}.${datTtl}"
     }
 
     public override fun clone(): DatCertificate {
@@ -93,12 +88,7 @@ class DatCertificate private constructor(
                 if (parts.size == 8) {
                     val cid = parts[0].toULong(16).toLong()
                     val signatureAlgorithm = DatSignatureAlgorithm.valueOf(parts[1])
-                    val signatureKeyStr = parts[2].split('~')
-                    val signatureKey = when (signatureKeyStr.size) {
-                        2 -> DatSignatureKey.fromBytes(signatureAlgorithm, DatUtils.decodeBase64Url(signatureKeyStr[0]), DatUtils.decodeBase64Url(signatureKeyStr[1]))
-                        1 -> DatSignatureKey.fromBytes(signatureAlgorithm, DatUtils.decodeBase64Url(signatureKeyStr[0]), ByteArray(0))
-                        else -> throw DatException("Invalid Dat Signature Key Format")
-                    }
+                    val signatureKey = DatSignatureKey.fromKey(signatureAlgorithm, DatUtils.decodeBase64Url(parts[2]))
                     val cryptAlgorithm = DatCryptoAlgorithm.valueOf(parts[3])
                     val cryptoKey = DatCryptoKey.fromBytes(cryptAlgorithm, DatUtils.decodeBase64Url(parts[4]))
                     return DatCertificate(

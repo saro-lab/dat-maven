@@ -22,25 +22,47 @@ class DatSignatureKeyEcdsa private constructor(
     companion object {
         private val BOUNCY_CASTLE_PROVIDER = BouncyCastleProvider().apply { Security.addProvider(this) }
 
+        internal fun getPrivateKeySize(algorithm: DatSignatureAlgorithm): Int {
+            return when (algorithm) {
+                P256 -> 32
+                P384 -> 48
+                P521 -> 66
+            }
+        }
+
+        internal fun getPublicKeySize(algorithm: DatSignatureAlgorithm): Int {
+            return when (algorithm) {
+                P256 -> 65
+                P384 -> 97
+                P521 -> 133
+            }
+        }
+
         @JvmStatic
-        internal fun fromBytes(algorithm: DatSignatureAlgorithm, signingKey: ByteArray?, verifyingKey: ByteArray): DatSignatureKey {
+        internal fun fromKey(algorithm: DatSignatureAlgorithm, key: ByteArray): DatSignatureKey {
             val spec = ECNamedCurveTable.getParameterSpec(getECGenParameterSpecName(algorithm))
             val kf: KeyFactory = getKeyFactory(algorithm)
+            val privateKeySize = getPrivateKeySize(algorithm)
+            val publicKeySize = getPublicKeySize(algorithm)
 
-            val signingKey = signingKey?.let {
-                val d = BigInteger(1, it) // 1은 양수를 의미
-                kf.generatePrivate(ECPrivateKeySpec(d, spec))
-            }
-
-            val verifyingKey = if (signingKey != null && verifyingKey.isEmpty()) {
-                val d = (signingKey as BCECPrivateKey).d
-                val q = spec.g.multiply(d) // 기준점 G에 개인키 d를 곱함
-                kf.generatePublic(ECPublicKeySpec(q, spec))
+            val signingKey = if (key.size == privateKeySize + publicKeySize) {
+                val pk = key.sliceArray(0 until privateKeySize);
+                kf.generatePrivate(ECPrivateKeySpec(BigInteger(1, pk), spec))
+            } else if (key.size == publicKeySize) {
+                null
             } else {
-                val point = spec.curve.decodePoint(verifyingKey)
-                val pubSpec = ECPublicKeySpec(point, spec)
-                kf.generatePublic(pubSpec)
+                throw DatException("Invalid Dat Signature Key Size: $algorithm ${key.size}")
             }
+
+            val verifyKeyByte = if (key.size == publicKeySize) {
+                key
+            } else {
+                key.sliceArray(privateKeySize until key.size)
+            }
+
+            val point = spec.curve.decodePoint(verifyKeyByte)
+            val pubSpec = ECPublicKeySpec(point, spec)
+            val verifyingKey = kf.generatePublic(pubSpec)
 
             return DatSignatureKeyEcdsa(algorithm, signingKey as BCECPrivateKey?, verifyingKey as BCECPublicKey)
         }
@@ -88,25 +110,27 @@ class DatSignatureKeyEcdsa private constructor(
         return algorithm
     }
 
-    override fun getSigningKeyBytes(): ByteArray? {
+    override fun exportKey(verifyOnly: Boolean): ByteArray {
+        if (verifyOnly && signingKey == null) {
+            throw DatException("verifyOnly: Is not Have Signing Key")
+        }
+
+        val vk = (verifyingKey).q.getEncoded(false)
         if (signingKey != null) {
             val key = (signingKey as BCECPrivateKey)
             val d = key.d
             val fieldSize = (getBitSize(algorithm) + 7) / 8
             val bytes = d.toByteArray()
             return if (bytes.size > fieldSize) {
-                bytes.copyOfRange(bytes.size - fieldSize, bytes.size)
+                (bytes.copyOfRange(bytes.size - fieldSize, bytes.size)) + vk
             } else if (bytes.size < fieldSize) {
-                ByteArray(fieldSize - bytes.size) + bytes
+                (ByteArray(fieldSize - bytes.size) + bytes) +  vk
             } else {
-                bytes
+                bytes + vk
             }
+        } else {
+            return vk
         }
-        return null
-    }
-
-    override fun getVerifyingKeyBytes(): ByteArray {
-        return (verifyingKey as BCECPublicKey).q.getEncoded(false)
     }
 
     override fun verify(body: ByteArray, signature: ByteArray): Boolean {
@@ -130,11 +154,11 @@ class DatSignatureKeyEcdsa private constructor(
         throw DatException("VerifyingKey Only Key: Is not Have Signing Key")
     }
 
-    override fun hasSigningKey(): Boolean {
+    override fun signable(): Boolean {
         return this.signingKey != null
     }
 
     override fun clone(): DatSignatureKey {
-        return fromBytes(algorithm, getSigningKeyBytes(), getVerifyingKeyBytes())
+        return fromKey(algorithm, exportKey())
     }
 }

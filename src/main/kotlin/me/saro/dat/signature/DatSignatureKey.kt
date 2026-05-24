@@ -4,17 +4,16 @@ interface DatSignatureKey: Cloneable {
     fun algorithm(): DatSignatureAlgorithm
     fun verify(body: ByteArray, signature: ByteArray): Boolean
     fun sign(body: ByteArray): ByteArray
-    fun getSigningKeyBytes(): ByteArray?
-    fun getVerifyingKeyBytes(): ByteArray
-    fun hasSigningKey(): Boolean
+    fun exportKey(verifyOnly: Boolean = false): ByteArray
+    fun signable(): Boolean
     public override fun clone(): DatSignatureKey
 
     companion object {
         @JvmStatic
-        fun fromBytes(algorithm: DatSignatureAlgorithm, privateKey: ByteArray?, publicKey: ByteArray): DatSignatureKey {
+        fun fromKey(algorithm: DatSignatureAlgorithm, key: ByteArray): DatSignatureKey {
             when (algorithm) {
                 DatSignatureAlgorithm.P256, DatSignatureAlgorithm.P384, DatSignatureAlgorithm.P521 -> {
-                    return DatSignatureKeyEcdsa.fromBytes(algorithm, if ((privateKey?.size ?: 0) > 0) privateKey else null, publicKey)
+                    return DatSignatureKeyEcdsa.fromKey(algorithm, key)
                 }
             }
         }

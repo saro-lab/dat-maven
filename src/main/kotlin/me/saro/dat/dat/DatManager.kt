@@ -3,7 +3,6 @@ package me.saro.dat.dat
 import me.saro.dat.DatUtils
 import me.saro.dat.Unixtime
 import me.saro.dat.exception.DatException
-import me.saro.dat.signature.DatSignatureKeyExportOption
 import java.io.ByteArrayOutputStream
 import java.util.concurrent.locks.ReentrantReadWriteLock
 import java.util.stream.Collectors
@@ -63,9 +62,9 @@ class DatManager private constructor(
         }
     }
 
-    fun exports(signatureKeyExportOption: DatSignatureKeyExportOption): String {
+    fun exports(verifyOnly: Boolean): String {
         return lock.read {
-            certificates.joinToString("\n") { it.exports(signatureKeyExportOption) }
+            certificates.joinToString("\n") { it.exports(verifyOnly) }
         }
     }
 

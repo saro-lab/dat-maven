@@ -14,10 +14,10 @@ public class SignatureTest {
         byte[] body = DatUtils.generateRandomBase62(100).getBytes();
         DatSignatureKey signatureKey = DatSignatureKey.generate(alg);
         DatSignatureKey signatureKeyFail = DatSignatureKey.generate(alg);
-        byte[] signingKeyBytes = signatureKey.getSigningKeyBytes();
-        byte[] verifyingKeyBytes = signatureKey.getVerifyingKeyBytes();
-        DatSignatureKey signatureKeyFrom = DatSignatureKey.fromBytes(alg, signingKeyBytes, verifyingKeyBytes);
-        DatSignatureKey verifyKeyFrom = DatSignatureKey.fromBytes(alg, null, verifyingKeyBytes);
+        byte[] keyBytes = signatureKey.exportKey(false);
+        byte[] verifyingKeyBytes = signatureKey.exportKey(true);
+        DatSignatureKey signatureKeyFrom = DatSignatureKey.fromKey(alg, keyBytes);
+        DatSignatureKey verifyKeyFrom = DatSignatureKey.fromKey(alg, verifyingKeyBytes);
 
         var sign = signatureKeyFrom.sign(body);
 

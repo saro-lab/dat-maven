@@ -6,7 +6,6 @@ import me.saro.dat.dat.DatCertificate;
 import me.saro.dat.dat.DatManager;
 import me.saro.dat.dat.Payload;
 import me.saro.dat.signature.DatSignatureAlgorithm;
-import me.saro.dat.signature.DatSignatureKeyExportOption;
 import org.junit.jupiter.api.Test;
 
 import java.nio.charset.StandardCharsets;
@@ -23,7 +22,7 @@ public class CertificateTest {
 
         long id = (long) (Math.random() * Long.MAX_VALUE);
         DatCertificate newCert = generate(id, signatureAlgorithm, cryptoAlgorithm);
-        String newCertStr = newCert.exports(DatSignatureKeyExportOption.PAIR);
+        String newCertStr = newCert.exports(false);
 
         DatCertificate readCert = DatCertificate.parse(newCertStr);
 
