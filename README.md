@@ -4,9 +4,9 @@
 
 ### [DAT Run Online](https://dat.saro.me)
 
-### [What is DAT](https://dat.saro.me/--/intro)
+### [What is DAT](https://dat.saro.me/intro)
 
-### [Java / Kotlin Example](https://dat.saro.me/--/libs/maven-me.saro-dat)
+### [Java / Kotlin Example](https://dat.saro.me/libs/maven-me.saro-dat)
 
 
 ## Support algorithm

@@ -63,7 +63,7 @@ public class ExampleTest {
     // @Test
     public void useDatCms() throws IOException, InterruptedException {
         // BEFORE: install dat-cms
-        // See: https://dat.saro.me/--/svc/docker-saro-lab-dat-cms
+        // See: https://dat.saro.me/svc/docker-saro-lab-dat-cms
 
         // Singleton Manager
         DatManager manager = DatManager.newInstance();

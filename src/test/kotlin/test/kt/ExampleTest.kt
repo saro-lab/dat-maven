@@ -62,7 +62,7 @@ class ExampleTest {
     @Throws(IOException::class, InterruptedException::class)
     fun useDatCms() {
         // BEFORE: install dat-cms
-        // See: https://dat.saro.me/--/svc/docker-saro-lab-dat-cms
+        // See: https://dat.saro.me/svc/docker-saro-lab-dat-cms
 
         // Singleton Manager
 
