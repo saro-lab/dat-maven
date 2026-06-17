@@ -13,7 +13,7 @@ plugins {
 
 val datGroupId = "me.saro"
 val datArtifactId = "dat"
-val datVersion = "4.0.1"
+val datVersion = "4.2.0"
 
 group = datGroupId
 version = datVersion
@@ -24,11 +24,13 @@ repositories {
 
 dependencies {
     implementation("org.bouncycastle:bcprov-jdk18on:1.84")
+    compileOnly("org.slf4j:slf4j-api:2.0.18")
 
 	// test
     val junitVer = "6.0.3"
 	testImplementation("org.junit.jupiter:junit-jupiter:$junitVer")
 	testRuntimeOnly("org.junit.platform:junit-platform-launcher:$junitVer")
+    testImplementation("ch.qos.logback:logback-classic:1.5.34")
 }
 
 java {
@@ -41,7 +43,7 @@ tasks.withType<Test> {
         excludeTags("benchmark")
     }
 	testLogging {
-		events("passed", "failed", "skipped")
+        events("passed", "skipped", "failed", "standardOut", "standardError")
 		showStandardStreams = true
 	}
     jvmArgs("-XX:+TieredCompilation")

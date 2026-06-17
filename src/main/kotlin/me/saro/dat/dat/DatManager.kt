@@ -3,6 +3,7 @@ package me.saro.dat.dat
 import me.saro.dat.DatUtils
 import me.saro.dat.Unixtime
 import me.saro.dat.exception.DatException
+import org.slf4j.LoggerFactory
 import java.io.ByteArrayOutputStream
 import java.util.concurrent.locks.ReentrantReadWriteLock
 import java.util.stream.Collectors
@@ -82,15 +83,18 @@ class DatManager private constructor(
 
     fun imports(certificates: List<DatCertificate>, clear: Boolean) {
         if (certificates.size != certificates.distinctBy { it.cid }.size) {
+            log.error("Duplicate CID(Certificate ID)")
             throw IllegalArgumentException("Duplicate CID(Certificate ID)")
         }
 
+        var renew: Int = 0
         val list = if (clear) {
             certificates.stream()
         } else {
             val inList = exportsCertificates().toMutableList()
             for (certificate in certificates) {
                 if (!inList.contains(certificate)) {
+                    renew++
                     inList.add(certificate)
                 }
             }
@@ -105,10 +109,12 @@ class DatManager private constructor(
             this.certificates = list
             this.issuer = issuer
         }
+        log.debug("Renew $renew DAT Certificate")
     }
 
     companion object {
         private const val DOT = '.'.code
+        private val log = LoggerFactory.getLogger(DatManager::class.java)
 
         @JvmStatic
         fun newInstance(): DatManager {
