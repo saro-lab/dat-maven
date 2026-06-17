@@ -18,7 +18,7 @@ class DatCmsManager private constructor(
     private var version: Long,
     private val manager: DatManager,
     private val client: HttpClient,
-    private val scheduler: ScheduledExecutorService,
+    private val scheduler: ScheduledExecutorService?,
 ) {
     private val lock = ReentrantReadWriteLock()
     private val sync = Runnable { sync() }
@@ -116,7 +116,9 @@ class DatCmsManager private constructor(
 
             val cms = DatCmsManager(uri, token, 0, manager, client, scheduler)
             cms.sync()
-            scheduler.scheduleAtFixedRate(cms.sync, intervalSeconds, intervalSeconds, TimeUnit.SECONDS)
+            if (intervalSeconds > 0) {
+                scheduler.scheduleAtFixedRate(cms.sync, intervalSeconds, intervalSeconds, TimeUnit.SECONDS)
+            }
             return cms
         }
     }
