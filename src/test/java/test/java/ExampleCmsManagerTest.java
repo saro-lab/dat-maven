@@ -4,10 +4,13 @@ import me.saro.dat.dat.DatCmsManager;
 import me.saro.dat.dat.Payload;
 import org.junit.jupiter.api.Test;
 
+import java.io.IOException;
+import java.util.concurrent.CountDownLatch;
+
 public class ExampleCmsManagerTest {
 
-    @Test
-    public void useDatCms() {
+    // @Test
+    public void useDatCms() throws IOException, InterruptedException {
 
         /*
         # server example
@@ -21,6 +24,7 @@ public class ExampleCmsManagerTest {
         DatCmsManager manager = DatCmsManager.builder()
                 .host("localhost")
                 .port(8088)
+                .intervalSeconds(5)
                 .token("12345678901b")
                 .build();
 
@@ -45,5 +49,9 @@ public class ExampleCmsManagerTest {
 
         assert plain.equals(payloadPlain);
         assert secure.equals(payloadSecure);
+
+        // wait
+        CountDownLatch latch = new CountDownLatch(1);
+        latch.await();
     }
 }

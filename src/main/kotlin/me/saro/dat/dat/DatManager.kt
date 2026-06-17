@@ -69,7 +69,7 @@ class DatManager private constructor(
         }
     }
 
-    fun imports(format: String, clear: Boolean) {
+    fun imports(format: String, clear: Boolean): Int {
         val list = if (format.isNotBlank()) {
             format.lineSequence()
                 .filter { it.isNotBlank() }
@@ -78,10 +78,10 @@ class DatManager private constructor(
         } else {
             listOf()
         }
-        imports(list, clear)
+        return imports(list, clear)
     }
 
-    fun imports(certificates: List<DatCertificate>, clear: Boolean) {
+    fun imports(certificates: List<DatCertificate>, clear: Boolean): Int {
         if (certificates.size != certificates.distinctBy { it.cid }.size) {
             log.error("Duplicate CID(Certificate ID)")
             throw IllegalArgumentException("Duplicate CID(Certificate ID)")
@@ -109,7 +109,7 @@ class DatManager private constructor(
             this.certificates = list
             this.issuer = issuer
         }
-        log.debug("Renew $renew DAT Certificate")
+        return renew
     }
 
     companion object {

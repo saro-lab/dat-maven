@@ -61,8 +61,11 @@ class DatCmsManager private constructor(
             } else if (iof > 0) {
                 val newVersion = body.substring(0, iof).trim().toLong()
                 val newCertificates = body.substring(iof + 1).trim()
-                manager.imports(newCertificates, false)
+                val renew = manager.imports(newCertificates, false)
                 version = newVersion
+                log.debug("renew $renew certificates: $newUrl")
+            } else {
+                log.debug("no new certificate: $newUrl")
             }
         } catch (e: Exception) {
             log.error("[Exception] DAT SMS Sync $newUrl: ", e)
@@ -79,13 +82,13 @@ class DatCmsManager private constructor(
     }
 
     class DatCmsManagerBuilder private constructor(
-        var client: HttpClient = HttpClient.newBuilder().build(),
-        var https: Boolean = false,
-        var host: String = "localhost",
-        var port: Int = 8088,
-        var token: String = "",
-        var verifyOnly: Boolean = false,
-        var intervalSeconds: Long = 60L
+        private var client: HttpClient = HttpClient.newBuilder().build(),
+        private var https: Boolean = false,
+        private var host: String = "localhost",
+        private var port: Int = 8088,
+        private var token: String = "",
+        private var verifyOnly: Boolean = false,
+        private var intervalSeconds: Long = 60L
     ) {
         constructor(): this(
             client = HttpClient.newBuilder().build()
