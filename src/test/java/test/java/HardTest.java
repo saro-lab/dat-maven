@@ -79,5 +79,12 @@ f000000000000000.0.32506362000.32506358400.ECDSA-P521.IV-AES256-GCM.BACwvrucwjh5
             System.out.println("PASS " + dat);
             System.out.println("PASS " + payload.toUnsafeString());
         }
+
+        var newDat = manager.issue(plain, secure);
+        Payload newPayload = manager.parse(newDat);
+        assert plain.equals(newPayload.getPlain());
+        assert secure.equals(newPayload.getSecure());
+        System.out.println("PASS NEW DAT " + newDat);
+        System.out.println("PASS NEW PAYLOAD " + newPayload.toUnsafeString());
     }
 }

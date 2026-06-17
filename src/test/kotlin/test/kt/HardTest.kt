@@ -84,5 +84,12 @@ f000000000000000.0.32506362000.32506358400.ECDSA-P521.IV-AES256-GCM.BACwvrucwjh5
             println("PASS " + dat)
             println("PASS " + payload.toUnsafeString())
         }
+
+        val newDat = manager.issue(plain, secure)
+        val newPayload = manager.parse(newDat)
+        assert(plain == newPayload.plain)
+        assert(secure == newPayload.secure)
+        println("PASS NEW DAT " + newDat)
+        println("PASS NEW PAYLOAD " + newPayload.toUnsafeString())
     }
 }

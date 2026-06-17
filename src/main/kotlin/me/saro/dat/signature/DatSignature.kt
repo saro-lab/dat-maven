@@ -6,29 +6,32 @@ interface DatSignature: Cloneable {
     fun sign(body: ByteArray): ByteArray
     fun exportKey(verifyOnly: Boolean = false): ByteArray
     fun signable(): Boolean
+    fun supportVerifyOnly(): Boolean
     public override fun clone(): DatSignature
 
     companion object {
         @JvmStatic
         fun fromKey(algorithm: DatSignatureAlgorithm, key: ByteArray): DatSignature {
-            when (algorithm) {
+            return when (algorithm) {
                 DatSignatureAlgorithm.ECDSA_P256, DatSignatureAlgorithm.ECDSA_P384, DatSignatureAlgorithm.ECDSA_P521 -> {
-                    return DatSignatureEcdsa.fromKey(algorithm, key)
+                    DatSignatureEcdsa.fromKey(algorithm, key)
                 }
+
                 DatSignatureAlgorithm.HMAC_SHA256_MFS, DatSignatureAlgorithm.HMAC_SHA384_MFS, DatSignatureAlgorithm.HMAC_SHA512_MFS -> {
-                    return DatSignatureHmac.fromKey(algorithm, key)
+                    DatSignatureHmac.fromKey(algorithm, key)
                 }
             }
         }
 
         @JvmStatic
         fun generate(algorithm: DatSignatureAlgorithm): DatSignature {
-            when (algorithm) {
+            return when (algorithm) {
                 DatSignatureAlgorithm.ECDSA_P256, DatSignatureAlgorithm.ECDSA_P384, DatSignatureAlgorithm.ECDSA_P521 -> {
-                    return DatSignatureEcdsa.generate(algorithm)
+                    DatSignatureEcdsa.generate(algorithm)
                 }
+
                 DatSignatureAlgorithm.HMAC_SHA256_MFS, DatSignatureAlgorithm.HMAC_SHA384_MFS, DatSignatureAlgorithm.HMAC_SHA512_MFS -> {
-                    return DatSignatureHmac.generate(algorithm)
+                    DatSignatureHmac.generate(algorithm)
                 }
             }
         }

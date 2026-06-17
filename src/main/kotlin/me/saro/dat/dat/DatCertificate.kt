@@ -30,8 +30,15 @@ class DatCertificate private constructor(
     fun signable(): Boolean {
         return signature.signable()
     }
+    fun supportVerifyOnly(): Boolean {
+        return signature.signable()
+    }
 
     fun exports(verifyOnly: Boolean = false): String {
+        if (verifyOnly && !supportVerifyOnly()) {
+            throw DatException("Verify Only Key: Is not Support Verify Only Key")
+        }
+
         return StringBuffer()
             .append(cidHex).append('.') // cid
             .append(datIssueBegin).append('.')

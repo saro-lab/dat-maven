@@ -82,6 +82,10 @@ class DatSignatureHmac private constructor(
         return true
     }
 
+    override fun supportVerifyOnly(): Boolean {
+        return false
+    }
+
     override fun clone(): DatSignature {
         return fromKey(algorithm, exportKey())
     }

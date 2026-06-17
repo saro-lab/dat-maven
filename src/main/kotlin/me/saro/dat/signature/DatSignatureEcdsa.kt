@@ -166,6 +166,10 @@ class DatSignatureEcdsa private constructor(
         return this.signingKey != null
     }
 
+    override fun supportVerifyOnly(): Boolean {
+        return true
+    }
+
     override fun clone(): DatSignature {
         return fromKey(algorithm, exportKey())
     }
