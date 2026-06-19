@@ -107,18 +107,25 @@ class DatCmsManager private constructor(
             val uri = "$proto://$host:$port/$DAT_CMS_API_VERSION/certs$pathVerifyOnly"
             val manager = DatManager.newInstance()
 
-            val scheduler: ScheduledExecutorService = Executors.newSingleThreadScheduledExecutor { runnable: Runnable ->
-                val thread = Thread(runnable)
-                thread.setDaemon(true)
-                thread.setName("dat-cms-sync-scheduler")
-                thread
-            }
 
-            val cms = DatCmsManager(uri, token, 0, manager, client, scheduler)
-            cms.sync()
-            if (intervalSeconds > 0) {
-                scheduler.scheduleAtFixedRate(cms.sync, intervalSeconds, intervalSeconds, TimeUnit.SECONDS)
+
+
+
+            val scheduler: ScheduledExecutorService? = if (intervalSeconds > 0) {
+                Executors.newSingleThreadScheduledExecutor { runnable: Runnable ->
+                    val thread = Thread(runnable)
+                    thread.setDaemon(true)
+                    thread.setName("dat-cms-sync-scheduler")
+                    thread
+                }
+            } else {
+                null
             }
+            val cms = DatCmsManager(uri, token, 0, manager, client, scheduler)
+            scheduler?.apply {
+                scheduleAtFixedRate(cms.sync, intervalSeconds, intervalSeconds, TimeUnit.SECONDS)
+            }
+            cms.sync()
             return cms
         }
     }

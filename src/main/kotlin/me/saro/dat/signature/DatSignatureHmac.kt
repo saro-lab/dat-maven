@@ -59,6 +59,9 @@ class DatSignatureHmac private constructor(
     }
 
     override fun exportKey(verifyOnly: Boolean): ByteArray {
+        if (verifyOnly) {
+            throw DatException("Hmac does not support Verify Only")
+        }
         return secret
     }
 
