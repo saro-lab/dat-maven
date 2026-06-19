@@ -13,7 +13,7 @@ plugins {
 
 val datGroupId = "me.saro"
 val datArtifactId = "dat"
-val datVersion = "4.2.1"
+val datVersion = "4.2.2"
 
 group = datGroupId
 version = datVersion

@@ -12,17 +12,17 @@ class DatCertificate private constructor(
     val cid: ULong,
     internal val signature: DatSignature,
     internal val crypto: DatCrypto,
-    internal val datIssueBegin: ULong,
-    internal val datIssueEnd: ULong,
-    internal val datTtl: ULong,
+    internal val datIssuanceStartSeconds: ULong,
+    internal val datIssuanceEndSeconds: ULong,
+    internal val datTtlSeconds: ULong,
 ): Cloneable {
     internal val cidHex = cid.toString(16)
     internal val cidHexBytes = cidHex.toByteArray()
 
-    val expired: Boolean get() = (datIssueEnd + datTtl) < Unixtime.now().toULong()
+    val expired: Boolean get() = (datIssuanceEndSeconds + datTtlSeconds) < Unixtime.now().toULong()
 
     val issuable: Boolean get() {
-        return this.signable() && Unixtime.now().toULong() in datIssueBegin..datIssueEnd
+        return this.signable() && Unixtime.now().toULong() in datIssuanceStartSeconds..datIssuanceEndSeconds
     }
 
     val cidLong: Long get() = cid.toLong()
@@ -37,9 +37,9 @@ class DatCertificate private constructor(
     fun exports(verifyOnly: Boolean = false): String {
         return StringBuffer()
             .append(cidHex).append('.') // cid
-            .append(datIssueBegin).append('.')
-            .append(datIssueEnd - datIssueBegin).append('.')
-            .append(datTtl).append('.')
+            .append(datIssuanceStartSeconds).append('.')
+            .append(datIssuanceEndSeconds - datIssuanceStartSeconds).append('.')
+            .append(datTtlSeconds).append('.')
             .append(signature.algorithm()).append('.')
             .append(crypto.algorithm()).append('.')
             .append(DatUtils.encodeBase64Url(signature.exportKey(verifyOnly))).append('.')
@@ -56,9 +56,9 @@ class DatCertificate private constructor(
             cid,
             signature.clone(),
             crypto.clone(),
-            datIssueBegin,
-            datIssueEnd,
-            datTtl
+            datIssuanceStartSeconds,
+            datIssuanceEndSeconds,
+            datTtlSeconds
         )
     }
 
@@ -75,40 +75,40 @@ class DatCertificate private constructor(
 
     companion object {
         @JvmStatic
-        fun generate(cid: Long, issuedAt: Long, issuanceDuration: Long, datTtl: Long, signatureAlgorithm: DatSignatureAlgorithm, cryptoAlgorithm: DatCryptoAlgorithm): DatCertificate {
+        fun generate(cid: Long, datIssuanceStartSeconds: Long, datIssuanceDurationSeconds: Long, datTtlSeconds: Long, signatureAlgorithm: DatSignatureAlgorithm, cryptoAlgorithm: DatCryptoAlgorithm): DatCertificate {
             return new(
                 cid,
-                issuedAt,
-                issuanceDuration,
-                datTtl,
+                datIssuanceStartSeconds,
+                datIssuanceDurationSeconds,
+                datTtlSeconds,
                 DatSignature.generate(signatureAlgorithm),
                 DatCrypto.generate(cryptoAlgorithm),
             )
         }
 
         @JvmStatic
-        fun new(cid: Long, issuedAt: Long, issuanceDuration: Long, datTtl: Long, signatureKey: DatSignature, cryptoKey: DatCrypto): DatCertificate {
-            return new(cid.toULong(), issuedAt.toULong(), issuanceDuration.toULong(), datTtl.toULong(), signatureKey, cryptoKey)
+        fun new(cid: Long, datIssuanceStartSeconds: Long, datIssuanceDurationSeconds: Long, datTtlSeconds: Long, signatureKey: DatSignature, cryptoKey: DatCrypto): DatCertificate {
+            return new(cid.toULong(), datIssuanceStartSeconds.toULong(), datIssuanceDurationSeconds.toULong(), datTtlSeconds.toULong(), signatureKey, cryptoKey)
         }
 
         @JvmStatic
-        fun new(cid: ULong, issuedAt: ULong, issuanceDuration: ULong, datTtl: ULong, signatureKey: DatSignature, cryptoKey: DatCrypto): DatCertificate {
-            if (issuedAt < 0UL) {
-                throw DatException("issuedAt must >= 0")
+        fun new(cid: ULong, datIssuanceStartSeconds: ULong, datIssuanceDurationSeconds: ULong, datTtlSeconds: ULong, signatureKey: DatSignature, cryptoKey: DatCrypto): DatCertificate {
+            if (datIssuanceStartSeconds < 0UL) {
+                throw DatException("datIssuanceStartSeconds must >= 0")
             }
-            if (datTtl < 1UL) {
-                throw DatException("datTtl must > 0")
+            if (datTtlSeconds < 1UL) {
+                throw DatException("datTtlSeconds must > 0")
             }
-            if (issuanceDuration < (datTtl * 2UL) && issuanceDuration < (datTtl + 3600UL)) {
-                throw DatException("issuanceDuration must > (datTtl * 2) or (datTtl + 3600)")
+            if (datIssuanceDurationSeconds < 1UL) {
+                throw DatException("datIssuanceDurationSeconds must > 0")
             }
             return DatCertificate(
                 cid,
                 signatureKey,
                 cryptoKey,
-                issuedAt,
-                issuedAt + issuanceDuration,
-                datTtl,
+                datIssuanceStartSeconds,
+                datIssuanceStartSeconds + datIssuanceDurationSeconds,
+                datTtlSeconds,
             )
         }
 
@@ -118,18 +118,18 @@ class DatCertificate private constructor(
                 val parts: List<String> = format.split(".")
                 if (parts.size == 8) {
                     val cid = parts[0].toULong(16).toLong()
-                    val issuedAt = parts[1].toULong().toLong()
-                    val issuanceDuration = issuedAt - parts[2].toULong().toLong()
-                    val datTtl = parts[3].toULong().toLong()
+                    val datIssuanceStartSeconds = parts[1].toULong().toLong()
+                    val datIssuanceDurationSeconds = datIssuanceStartSeconds - parts[2].toULong().toLong()
+                    val datTtlSeconds = parts[3].toULong().toLong()
                     val signatureAlgorithm = DatSignatureAlgorithm.fromString(parts[4])
                     val cryptAlgorithm = DatCryptoAlgorithm.fromString(parts[5])
                     val signatureKey = DatSignature.fromKey(signatureAlgorithm, DatUtils.decodeBase64Url(parts[6]))
                     val cryptoKey = DatCrypto.fromBytes(cryptAlgorithm, DatUtils.decodeBase64Url(parts[7]))
                     return new(
                         cid,
-                        issuedAt,
-                        issuanceDuration,
-                        datTtl,
+                        datIssuanceStartSeconds,
+                        datIssuanceDurationSeconds,
+                        datTtlSeconds,
                         signatureKey,
                         cryptoKey,
                     )

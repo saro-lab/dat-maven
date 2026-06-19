@@ -100,7 +100,7 @@ class DatManager private constructor(
             }
             inList.stream()
         }.filter { !it.expired }
-            .sorted(Comparator.comparing { it.datIssueEnd })
+            .sorted(Comparator.comparing { it.datIssuanceEndSeconds })
             .collect(Collectors.toList())
 
         val issuer: DatCertificate? = list.findLast { it.issuable }?.clone()
@@ -131,7 +131,7 @@ class DatManager private constructor(
             val bw = ByteArrayOutputStream(((plain.size * 1.5).toInt() + (secure.size * 2)) + 300)
 
             // expire
-            val expire = (Unixtime.now().toULong() + certificate.datTtl).toString().toByteArray()
+            val expire = (Unixtime.now().toULong() + certificate.datTtlSeconds).toString().toByteArray()
             bw.write(expire)
             bw.write(DOT)
 

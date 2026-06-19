@@ -15,7 +15,7 @@ class SignatureTest {
         val signatureKey = generate(alg)
         val signatureKeyFail = generate(alg)
         val keyBytes = signatureKey.exportKey(false)
-        val verifyingKeyBytes = signatureKey.exportKey(true)
+        val verifyingKeyBytes = signatureKey.exportKey(signatureKey.supportVerifyOnly())
         val signatureKeyFrom = fromKey(alg, keyBytes)
         val verifyKeyFrom = fromKey(alg, verifyingKeyBytes)
 

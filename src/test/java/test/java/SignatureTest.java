@@ -16,7 +16,7 @@ public class SignatureTest {
         DatSignature signatureKey = DatSignature.generate(alg);
         DatSignature signatureKeyFail = DatSignature.generate(alg);
         byte[] keyBytes = signatureKey.exportKey(false);
-        byte[] verifyingKeyBytes = signatureKey.exportKey(true);
+        byte[] verifyingKeyBytes = signatureKey.exportKey(signatureKey.supportVerifyOnly());
         DatSignature signatureKeyFrom = DatSignature.fromKey(alg, keyBytes);
         DatSignature verifyKeyFrom = DatSignature.fromKey(alg, verifyingKeyBytes);
 
