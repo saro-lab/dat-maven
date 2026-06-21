@@ -98,8 +98,6 @@ class DatCmsManager private constructor(
         fun intervalSeconds(intervalSeconds: Long) = this.apply { this.intervalSeconds = intervalSeconds; }
 
         fun build(): DatCmsManager {
-            println("this.uri.path: ${this.uri.path}")
-            println("this.uri.query: ${this.uri.query}")
             if ((this.uri.path?.length?:0) > 1) {
                 throw DatException("uri must be path-less: ${this.uri}")
             }
@@ -112,8 +110,6 @@ class DatCmsManager private constructor(
                 "/$DAT_CMS_API_VERSION/certs"
             }
             val uri = "${this.uri.scheme}://${this.uri.host}:${this.uri.port}$path"
-
-            println("uri: $uri")
 
             val manager = DatManager.newInstance()
 
