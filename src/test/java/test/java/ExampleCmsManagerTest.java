@@ -2,27 +2,19 @@ package test.java;
 
 import me.saro.dat.dat.DatCmsManager;
 import me.saro.dat.dat.Payload;
+import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 import java.util.concurrent.CountDownLatch;
 
 public class ExampleCmsManagerTest {
 
-    // @Test
+    //@Test
     public void useDatCms() throws IOException, InterruptedException {
-
-        /*
-        # server example
-        TOKEN_MASTER="123456789012" \
-        TOKEN_CERT_FULL="12345678901a,12345678901b" \
-        TOKEN_CERT_VERIFY="12345678901C,12345678901D" \
-        .\dat-cms
-        */
 
         // singleton
         DatCmsManager manager = DatCmsManager.builder()
-                .host("localhost")
-                .port(8088)
+                .uri("http://localhost:8088")
                 .intervalSeconds(5)
                 .token("12345678901b")
                 .build();

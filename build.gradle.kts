@@ -13,7 +13,7 @@ plugins {
 
 val datGroupId = "me.saro"
 val datArtifactId = "dat"
-val datVersion = "4.2.2"
+val datVersion = "4.3.0"
 
 group = datGroupId
 version = datVersion
@@ -27,7 +27,7 @@ dependencies {
     compileOnly("org.slf4j:slf4j-api:2.0.18")
 
 	// test
-    val junitVer = "6.0.3"
+    val junitVer = "6.1.0"
 	testImplementation("org.junit.jupiter:junit-jupiter:$junitVer")
 	testRuntimeOnly("org.junit.platform:junit-platform-launcher:$junitVer")
     testImplementation("ch.qos.logback:logback-classic:1.5.34")

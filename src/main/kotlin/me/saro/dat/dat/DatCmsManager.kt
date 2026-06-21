@@ -83,9 +83,7 @@ class DatCmsManager private constructor(
 
     class DatCmsManagerBuilder private constructor(
         private var client: HttpClient = HttpClient.newBuilder().build(),
-        private var https: Boolean = false,
-        private var host: String = "localhost",
-        private var port: Int = 8088,
+        private var uri: URI = URI.create("http://localhost:8088"),
         private var token: String = "",
         private var verifyOnly: Boolean = false,
         private var intervalSeconds: Long = 60L
@@ -94,22 +92,30 @@ class DatCmsManager private constructor(
             client = HttpClient.newBuilder().build()
         )
 
-        fun https(https: Boolean) = this.apply { this.https = https; }
-        fun host(host: String) = this.apply { this.host = host; }
-        fun port(port: Int) = this.apply { this.port = port; }
+        fun uri(uri: String) = this.apply { this.uri = URI.create(uri); }
         fun token(token: String) = this.apply { this.token = token; }
         fun verifyOnly(verifyOnly: Boolean) = this.apply { this.verifyOnly = verifyOnly; }
         fun intervalSeconds(intervalSeconds: Long) = this.apply { this.intervalSeconds = intervalSeconds; }
 
         fun build(): DatCmsManager {
-            val proto = if (https) "https" else "http"
-            val pathVerifyOnly = if (verifyOnly) "/verify-only" else ""
-            val uri = "$proto://$host:$port/$DAT_CMS_API_VERSION/certs$pathVerifyOnly"
+            println("this.uri.path: ${this.uri.path}")
+            println("this.uri.query: ${this.uri.query}")
+            if ((this.uri.path?.length?:0) > 1) {
+                throw DatException("uri must be path-less: ${this.uri}")
+            }
+            if ((this.uri.query?.length?:0) > 0) {
+                throw DatException("uri must be query-less: ${this.uri}")
+            }
+            val path = if (this.verifyOnly) {
+                "/$DAT_CMS_API_VERSION/certs/verify-only"
+            } else {
+                "/$DAT_CMS_API_VERSION/certs"
+            }
+            val uri = "${this.uri.scheme}://${this.uri.host}:${this.uri.port}$path"
+
+            println("uri: $uri")
+
             val manager = DatManager.newInstance()
-
-
-
-
 
             val scheduler: ScheduledExecutorService? = if (intervalSeconds > 0) {
                 Executors.newSingleThreadScheduledExecutor { runnable: Runnable ->
