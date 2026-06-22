@@ -25,11 +25,11 @@ public class CertificateTest {
         DatCertificate readCert = DatCertificate.parse(newCertStr);
         System.out.println("Cert " + newCertStr);
 
-        String dat = DatManager.issue(newCert, plain, secure);
-        String dat2 = DatManager.issue(newCert, plain.getBytes(StandardCharsets.UTF_8), secure.getBytes(StandardCharsets.UTF_8));
+        String dat = DatManager.issue(newCert, plain, secure).getOrThrow();
+        String dat2 = DatManager.issue(newCert, plain.getBytes(StandardCharsets.UTF_8), secure.getBytes(StandardCharsets.UTF_8)).getOrThrow();
 
-        Payload payload = DatManager.parse(readCert, dat);
-        Payload payload2 = DatManager.parse(readCert, dat2);
+        Payload payload = DatManager.parse(readCert, dat).getOrThrow();
+        Payload payload2 = DatManager.parse(readCert, dat2).getOrThrow();
         System.out.println("DAT " + dat);
 
         assert plain.equals(payload.getPlain());
@@ -38,7 +38,7 @@ public class CertificateTest {
         assert secure.equals(payload2.getSecure());
         assert id == newCert.getCidLong();
         assert id == readCert.getCidLong();
-        assertThrows(Exception.class, () -> DatManager.parse(failCert, dat));
+        assertThrows(Exception.class, () -> DatManager.parse(failCert, dat).getOrThrow());
     }
 
 

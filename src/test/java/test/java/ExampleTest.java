@@ -44,11 +44,11 @@ public class ExampleTest {
         System.out.println("secure : " + secureData);
 
         // issue dat
-        String dat = manager.issue(plainData, secureData);
+        String dat = manager.issue(plainData, secureData).getOrThrow();
         System.out.println("dat : " + dat);
 
         // parse dat
-        Payload payload = manager.parse(dat);
+        Payload payload = manager.parse(dat).getOrThrow();
 
         String payloadPlain = payload.getPlain();
         String payloadSecure = payload.getSecure();
@@ -89,11 +89,11 @@ public class ExampleTest {
         System.out.println("secure : " + secureData);
 
         // issue dat
-        String dat = manager.issue(plainData, secureData);
+        String dat = manager.issue(plainData, secureData).getOrThrow();
         System.out.println("dat : " + dat);
 
         // parse dat
-        Payload payload = manager.parse(dat);
+        Payload payload = manager.parse(dat).getOrThrow();
 
         String payloadPlain = payload.getPlain();
         String payloadSecure = payload.getSecure();
@@ -136,11 +136,11 @@ public class ExampleTest {
         System.out.println("secure : " + secureData);
 
         // to dat
-        String dat = manager.issue(plainData, secureData);
+        String dat = manager.issue(plainData, secureData).getOrThrow();
         System.out.println("dat : " + dat);
 
         // dat to payload
-        Payload payload = manager.parse(dat);
+        Payload payload = manager.parse(dat).getOrThrow();
 
         String payloadPlain = payload.getPlain();
         String payloadSecure = payload.getSecure();

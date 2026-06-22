@@ -78,15 +78,15 @@ f000000000000000.0.32506362000.32506358400.ECDSA-P521.IV-AES256-GCM.BACwvrucwjh5
         manager.imports(certs, true)
 
         for (dat in datList) {
-            val payload = manager.parse(dat)
+            val payload = manager.parse(dat).getOrThrow()
             assert(plain == payload.plain)
             assert(secure == payload.secure)
             println("PASS " + dat)
             println("PASS " + payload.toUnsafeString())
         }
 
-        val newDat = manager.issue(plain, secure)
-        val newPayload = manager.parse(newDat)
+        val newDat = manager.issue(plain, secure).getOrThrow()
+        val newPayload = manager.parse(newDat).getOrThrow()
         assert(plain == newPayload.plain)
         assert(secure == newPayload.secure)
         println("PASS NEW DAT " + newDat)

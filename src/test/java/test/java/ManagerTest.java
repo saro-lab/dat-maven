@@ -36,7 +36,7 @@ public class ManagerTest {
             for (var cryptoAlgorithm : DatCryptoAlgorithm.getEntries()) {
                 for (var j = 0; j < 20; j++) {
                     DatCertificate certificate = generate(i++, signatureAlgorithm, cryptoAlgorithm);
-                    dats.add(DatManager.issue(certificate, plain, secure));
+                    dats.add(DatManager.issue(certificate, plain, secure).getOrThrow());
                     manager.imports(List.of(certificate), false);
                 }
             }
@@ -46,7 +46,7 @@ public class ManagerTest {
         readManager.imports(manager.exports(false), true);
 
         for (String dat : dats) {
-            Payload payload = readManager.parse(dat);
+            Payload payload = readManager.parse(dat).getOrThrow();
             assert plain.equals(payload.getPlain());
             assert secure.equals(payload.getSecure());
             System.out.println("DatManager.PASS."+dat);
@@ -75,9 +75,9 @@ public class ManagerTest {
 
         manager.imports(format, true);
 
-        String dat = manager.issue("plain", "secure");
+        String dat = manager.issue("plain", "secure").getOrThrow();
 
-        Payload payload = manager.parse(dat);
+        Payload payload = manager.parse(dat).getOrThrow();
 
         System.out.println(payload);
     }

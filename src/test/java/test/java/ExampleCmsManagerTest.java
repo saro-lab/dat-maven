@@ -5,17 +5,15 @@ import me.saro.dat.dat.Payload;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
-import java.util.concurrent.CountDownLatch;
 
 public class ExampleCmsManagerTest {
 
-    //@Test
     public void useDatCms() throws IOException, InterruptedException {
 
         // singleton
         DatCmsManager manager = DatCmsManager.builder()
                 .uri("http://localhost:8088")
-                .intervalSeconds(5)
+                .intervalSeconds(1)
                 .token("12345678901b")
                 .build();
 
@@ -26,11 +24,11 @@ public class ExampleCmsManagerTest {
         System.out.println("secure : " + secure);
 
         // issue dat
-        String dat = manager.issue(plain, secure);
+        String dat = manager.issue(plain, secure).getOrThrow();
         System.out.println("dat : " + dat);
 
         // parse dat
-        Payload payload = manager.parse(dat);
+        Payload payload = manager.parse(dat).getOrThrow();
 
         String payloadPlain = payload.getPlain();
         String payloadSecure = payload.getSecure();
@@ -42,7 +40,15 @@ public class ExampleCmsManagerTest {
         assert secure.equals(payloadSecure);
 
         // wait
-        CountDownLatch latch = new CountDownLatch(1);
-        latch.await();
+        Thread.sleep(5000);
+    }
+
+    @Test
+    public void test() throws IOException, InterruptedException {
+        try {
+            useDatCms();
+        } catch (Exception e) {
+            System.out.println("Ignore: is soft test: real connection test");
+        }
     }
 }

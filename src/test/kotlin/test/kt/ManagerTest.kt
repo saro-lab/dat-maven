@@ -38,7 +38,7 @@ class ManagerTest {
             for (cryptoAlgorithm in DatCryptoAlgorithm.entries) {
                 for (j in 0..19) {
                     val certificate = generate(i++, signatureAlgorithm, cryptoAlgorithm)
-                    dats.add(issue(certificate, plain, secure))
+                    dats.add(issue(certificate, plain, secure).getOrThrow())
                     manager.imports(List.of<DatCertificate>(certificate), false)
                 }
             }
@@ -48,7 +48,7 @@ class ManagerTest {
         readManager.imports(manager.exports(false), true)
 
         for (dat in dats) {
-            val payload = readManager.parse(dat)
+            val payload = readManager.parse(dat).getOrThrow()
             assert(plain == payload.plain)
             assert(secure == payload.secure)
             println("DatManager.PASS." + dat)
@@ -78,9 +78,9 @@ class ManagerTest {
 
         manager.imports(format, true)
 
-        val dat = manager.issue("plain", "secure")
+        val dat = manager.issue("plain", "secure").getOrThrow()
 
-        val payload = manager.parse(dat)
+        val payload = manager.parse(dat).getOrThrow()
 
         println(payload)
     }

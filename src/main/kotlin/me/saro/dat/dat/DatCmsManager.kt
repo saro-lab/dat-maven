@@ -1,6 +1,7 @@
 package me.saro.dat.dat
 
 import me.saro.dat.exception.DatException
+import me.saro.dat.exception.DatResult
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.net.URI
@@ -25,17 +26,17 @@ class DatCmsManager private constructor(
 
     fun getManager() = manager
 
-    fun issue(plain: ByteArray, secure: ByteArray): String = manager.issue(plain, secure)
+    fun issue(plain: ByteArray, secure: ByteArray): DatResult<String> = manager.issue(plain, secure)
 
-    fun issue(plain: String, secure: String): String = manager.issue(plain, secure)
+    fun issue(plain: String, secure: String): DatResult<String> = manager.issue(plain, secure)
 
-    fun parse(dat: Dat): Payload = manager.parse(dat)
+    fun parse(dat: Dat): DatResult<Payload> = manager.parse(dat)
 
-    fun parse(dat: String): Payload = manager.parse(dat)
+    fun parse(dat: String): DatResult<Payload> = manager.parse(dat)
 
-    fun parseWithoutVerifying(dat: Dat): Payload = manager.parseWithoutVerifying(dat)
+    fun parseWithoutVerifying(dat: Dat): DatResult<Payload> = manager.parseWithoutVerifying(dat)
 
-    fun parseWithoutVerifying(dat: String): Payload = manager.parseWithoutVerifying(dat)
+    fun parseWithoutVerifying(dat: String): DatResult<Payload> = manager.parseWithoutVerifying(dat)
 
     fun sync() {
         if (!lock.writeLock().tryLock()) {

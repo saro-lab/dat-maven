@@ -42,11 +42,11 @@ class ExampleTest {
         println("secure : " + secureData)
 
         // issue dat
-        val dat = manager.issue(plainData, secureData)
+        val dat = manager.issue(plainData, secureData).getOrThrow()
         println("dat : " + dat)
 
         // parse dat
-        val payload = manager.parse(dat)
+        val payload = manager.parse(dat).getOrThrow()
 
         val payloadPlain = payload.plain
         val payloadSecure = payload.secure
@@ -89,11 +89,11 @@ class ExampleTest {
         println("secure : " + secureData)
 
         // issue dat
-        val dat = manager.issue(plainData, secureData)
+        val dat = manager.issue(plainData, secureData).getOrThrow()
         println("dat : " + dat)
 
         // parse dat
-        val payload = manager.parse(dat)
+        val payload = manager.parse(dat).getOrThrow()
 
         val payloadPlain = payload.plain
         val payloadSecure = payload.secure
@@ -137,11 +137,11 @@ class ExampleTest {
         println("secure : " + secureData)
 
         // to dat
-        val dat = manager.issue(plainData, secureData)
+        val dat = manager.issue(plainData, secureData).getOrThrow()
         println("dat : " + dat)
 
         // dat to payload
-        val payload = manager.parse(dat)
+        val payload = manager.parse(dat).getOrThrow()
 
         val payloadPlain = payload.plain
         val payloadSecure = payload.secure

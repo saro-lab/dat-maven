@@ -3,44 +3,49 @@ package me.saro.dat.dat
 import me.saro.dat.DatUtils
 import me.saro.dat.Unixtime
 import me.saro.dat.exception.DatException
+import me.saro.dat.exception.DatResult
 
-class Dat(
+class Dat private constructor(
     val dat: String,
-): Cloneable {
-    internal val expire: ULong
-    internal val cid: ULong
-    internal val plainBytes: ByteArray
-    internal val secureBytes: ByteArray
-    internal val signatureBytes: ByteArray
+    internal val expire: ULong,
+    internal val cid: ULong,
+    internal val plainBytes: ByteArray,
+    internal val secureBytes: ByteArray,
+    internal val signatureBytes: ByteArray,
     internal val body: ByteArray
-
+): Cloneable {
     fun getCid(): Long = cid.toLong()
     fun getExpire(): Long = expire.toLong()
 
-    init {
-        val parts = dat.split('.')
-        if (parts.size != 5) {
-            throw DatException("Invalid Dat Format")
-        }
-        try {
-            this.expire = parts[0].toULong()
-            if (expire < Unixtime.now().toULong()) {
-                throw DatException("Expired Dat")
-            }
-            this.cid = parts[1].toULong(16)
-            this.plainBytes = DatUtils.decodeBase64Url(parts[2])
-            this.secureBytes = DatUtils.decodeBase64Url(parts[3])
-            this.signatureBytes = DatUtils.decodeBase64Url(parts[4])
-            this.body = dat.substring(0, dat.lastIndexOf('.')).toByteArray()
-        } catch (e: Exception) {
-            if (e is DatException) {
-                throw e
-            }
-            throw DatException("Invalid Dat Format")
-        }
+    public override fun clone(): Dat {
+        return Dat(dat, expire, cid, plainBytes.clone(), secureBytes.clone(), signatureBytes.clone(), body.clone())
     }
 
-    public override fun clone(): Dat {
-        return Dat(dat)
+    companion object {
+        @JvmStatic
+        fun parse(dat: String): DatResult<Dat> {
+            val parts = dat.split('.')
+            if (parts.size != 5) {
+                return DatResult.failure(DatException("Invalid Dat Format"))
+            }
+
+            val expire = parts[0].toULongOrNull()
+                ?: return DatResult.failure(DatException("Invalid Dat Format"))
+
+            if (expire < Unixtime.now().toULong()) {
+                return DatResult.failure(DatException("Expired Dat"))
+            }
+
+            val cid = parts[1].toULongOrNull(radix = 16)
+                ?: return DatResult.failure(DatException("Invalid Dat Format"))
+
+            return DatResult.parse(runCatching {
+                val plainBytes: ByteArray = DatUtils.decodeBase64Url(parts[2])
+                val secureBytes: ByteArray = DatUtils.decodeBase64Url(parts[3])
+                val signatureBytes: ByteArray = DatUtils.decodeBase64Url(parts[4])
+                val body: ByteArray = dat.substring(0, dat.lastIndexOf('.')).toByteArray()
+                Dat(dat, expire, cid, plainBytes, secureBytes, signatureBytes, body)
+            })
+        }
     }
 }

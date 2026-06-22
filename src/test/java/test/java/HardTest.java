@@ -73,15 +73,15 @@ f000000000000000.0.32506362000.32506358400.ECDSA-P521.IV-AES256-GCM.BACwvrucwjh5
         manager.imports(certs, true);
 
         for (String dat : datList) {
-            Payload payload = manager.parse(dat);
+            Payload payload = manager.parse(dat).getOrThrow();
             assert plain.equals(payload.getPlain());
             assert secure.equals(payload.getSecure());
             System.out.println("PASS " + dat);
             System.out.println("PASS " + payload.toUnsafeString());
         }
 
-        var newDat = manager.issue(plain, secure);
-        Payload newPayload = manager.parse(newDat);
+        var newDat = manager.issue(plain, secure).getOrThrow();
+        Payload newPayload = manager.parse(newDat).getOrThrow();
         assert plain.equals(newPayload.getPlain());
         assert secure.equals(newPayload.getSecure());
         System.out.println("PASS NEW DAT " + newDat);

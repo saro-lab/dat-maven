@@ -8,6 +8,7 @@ import me.saro.dat.dat.DatManager.Companion.issue
 import me.saro.dat.dat.DatManager.Companion.parse
 import me.saro.dat.dat.Payload
 import me.saro.dat.signature.DatSignatureAlgorithm
+import org.junit.jupiter.api.Test
 import java.util.function.IntFunction
 import java.util.stream.IntStream
 
@@ -32,14 +33,14 @@ class BenchTest {
 
             var time = System.currentTimeMillis()
             val dats = stream(multiThread, loop)
-                .mapToObj<String>(IntFunction { i: Int -> issue(certificate, plain, secure) })
+                .mapToObj<String>(IntFunction { i: Int -> issue(certificate, plain, secure).getOrThrow() })
                 .toList()
             println(pre + "Issue * " + dats.size + " : " + (System.currentTimeMillis() - time) + "ms")
 
             time = System.currentTimeMillis()
             val dat = dats.get(0)
             val payloads = stream(multiThread, loop)
-                .mapToObj<Payload>(IntFunction { i: Int -> parse(certificate, dat) })
+                .mapToObj<Payload>(IntFunction { i: Int -> parse(certificate, dat).getOrThrow() })
                 .toList()
 
             println(pre + "Parse * " + payloads.size + " : " + (System.currentTimeMillis() - time) + "ms")

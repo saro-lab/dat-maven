@@ -25,11 +25,15 @@ class CertificateTest {
         val readCert = parse(newCertStr)
         println("Cert " + newCertStr)
 
-        val dat = issue(newCert, plain, secure)
-        val dat2 = issue(newCert, plain.toByteArray(StandardCharsets.UTF_8), secure.toByteArray(StandardCharsets.UTF_8))
+        val dat = issue(newCert, plain, secure).getOrThrow()
+        val dat2 = issue(
+            newCert,
+            plain.toByteArray(StandardCharsets.UTF_8),
+            secure.toByteArray(StandardCharsets.UTF_8)
+        ).getOrThrow()
 
-        val payload = parse(readCert, dat)
-        val payload2 = parse(readCert, dat2)
+        val payload = parse(readCert, dat).getOrThrow()
+        val payload2 = parse(readCert, dat2).getOrThrow()
         println("DAT " + dat)
 
         assert(plain == payload.plain)
@@ -38,7 +42,7 @@ class CertificateTest {
         assert(secure == payload2.secure)
         assert(id == newCert.cidLong)
         assert(id == readCert.cidLong)
-        Assertions.assertThrows(Exception::class.java, Executable { parse(failCert, dat) })
+        Assertions.assertThrows(Exception::class.java, Executable { parse(failCert, dat).getOrThrow() })
     }
 
 

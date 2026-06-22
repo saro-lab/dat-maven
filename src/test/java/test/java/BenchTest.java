@@ -28,14 +28,14 @@ public class BenchTest {
 
             long time = System.currentTimeMillis();
             List<String> dats = stream(multiThread, loop)
-                    .mapToObj(i -> DatManager.issue(certificate, plain, secure))
+                    .mapToObj(i -> DatManager.issue(certificate, plain, secure).getOrThrow())
                     .toList();
             System.out.println(pre + "Issue * " + dats.size() + " : " + (System.currentTimeMillis() - time) + "ms");
 
             time = System.currentTimeMillis();
             String dat = dats.get(0);
             List<Payload> payloads = stream(multiThread, loop)
-                    .mapToObj(i -> DatManager.parse(certificate, dat))
+                    .mapToObj(i -> DatManager.parse(certificate, dat).getOrThrow())
                     .toList();
 
             System.out.println(pre + "Parse * " + payloads.size() + " : " + (System.currentTimeMillis() - time) + "ms");
