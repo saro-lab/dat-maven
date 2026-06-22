@@ -32,11 +32,11 @@ class DatCmsManager private constructor(
 
     fun parse(dat: Dat): DatResult<Payload> = manager.parse(dat)
 
-    fun parse(dat: String): DatResult<Payload> = manager.parse(dat)
+    fun parse(dat: String?): DatResult<Payload> = manager.parse(dat)
 
     fun parseWithoutVerifying(dat: Dat): DatResult<Payload> = manager.parseWithoutVerifying(dat)
 
-    fun parseWithoutVerifying(dat: String): DatResult<Payload> = manager.parseWithoutVerifying(dat)
+    fun parseWithoutVerifying(dat: String?): DatResult<Payload> = manager.parseWithoutVerifying(dat)
 
     fun sync() {
         if (!lock.writeLock().tryLock()) {

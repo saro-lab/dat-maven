@@ -23,21 +23,24 @@ class Dat private constructor(
 
     companion object {
         @JvmStatic
-        fun parse(dat: String): DatResult<Dat> {
+        fun parse(dat: String?): DatResult<Dat> {
+            if (dat.isNullOrEmpty()) {
+                return DatResult.failure(DatException.INVALID_DAT_FORMAT)
+            }
             val parts = dat.split('.')
             if (parts.size != 5) {
-                return DatResult.failure(DatException("Invalid Dat Format"))
+                return DatResult.failure(DatException.INVALID_DAT_FORMAT)
             }
 
             val expire = parts[0].toULongOrNull()
-                ?: return DatResult.failure(DatException("Invalid Dat Format"))
+                ?: return DatResult.failure(DatException.INVALID_DAT_FORMAT)
 
             if (expire < Unixtime.now().toULong()) {
-                return DatResult.failure(DatException("Expired Dat"))
+                return DatResult.failure(DatException.EXPIRED_DAT)
             }
 
             val cid = parts[1].toULongOrNull(radix = 16)
-                ?: return DatResult.failure(DatException("Invalid Dat Format"))
+                ?: return DatResult.failure(DatException.INVALID_DAT_FORMAT)
 
             return DatResult.parse(runCatching {
                 val plainBytes: ByteArray = DatUtils.decodeBase64Url(parts[2])

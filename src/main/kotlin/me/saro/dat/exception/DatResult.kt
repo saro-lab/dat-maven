@@ -1,5 +1,6 @@
 package me.saro.dat.exception
 
+
 class DatResult<out T> private constructor(
     val value: T?,
     val exception: Throwable?,
@@ -15,27 +16,44 @@ class DatResult<out T> private constructor(
 
     fun toResult(): Result<T> = result ?: if (isSuccess) Result.success(value!!) else Result.failure(exception!!)
 
-    fun <R> map(onSuccess: (value: T?) -> R): DatResult<R> {
-        return if (isSuccess) {
-            success(onSuccess(value))
-        } else {
-            failure(exception)
+    fun <R> map(onSuccess: (value: T) -> R?): DatResult<R> {
+        return try {
+            return if (isSuccess) {
+                val v = onSuccess(value!!)
+                if (v == null) {
+                    failure(DatException.IS_NULL)
+                } else {
+                    success(v)
+                }
+            } else {
+                failure(exception)
+            }
+        } catch (e: Exception) {
+            failure(e)
         }
     }
 
     fun <R> fold(onSuccess: (value: T) -> DatResult<R>): DatResult<R> {
-        return if (isSuccess) {
-            onSuccess(value!!)
-        } else {
-            failure(exception!!)
+        return try {
+            if (isSuccess) {
+                onSuccess(value!!)
+            } else {
+                failure(exception!!)
+            }
+        } catch (e: Exception) {
+            failure(e)
         }
     }
 
     fun <R> fold(onSuccess: (value: T) -> DatResult<R>, onFailure: (exception: Throwable) -> DatResult<R>): DatResult<R> {
-        return if (isSuccess) {
-            onSuccess(value!!)
-        } else {
-            onFailure(exception!!)
+        return try {
+            if (isSuccess) {
+                onSuccess(value!!)
+            } else {
+                onFailure(exception!!)
+            }
+        } catch (e: Exception) {
+            failure(e)
         }
     }
 
@@ -58,7 +76,22 @@ class DatResult<out T> private constructor(
             } else if (success != null) {
                 DatResult(success, null, result)
             } else {
-                DatResult(null, DatException("value is null"), result)
+                DatResult(null, DatException.IS_NULL, result)
+            }
+        }
+        inline fun <R> runCatching(block: () -> R): DatResult<R> {
+
+            return try {
+                success(block())
+            } catch (e: Throwable) {
+                failure(e)
+            }
+        }
+        inline fun <R> runCatchingResult(block: () -> DatResult<R>): DatResult<R> {
+            return try {
+                block()
+            } catch (e: Throwable) {
+                failure(e)
             }
         }
     }

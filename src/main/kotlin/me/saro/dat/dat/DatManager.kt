@@ -18,15 +18,15 @@ class DatManager private constructor(
     private val lock = ReentrantReadWriteLock()
 
     fun issue(plain: ByteArray, secure: ByteArray): DatResult<String> {
-        return DatResult.parse(runCatching {
+        return DatResult.runCatchingResult {
             lock.read {
                 if (issuer != null) {
-                    issue(issuer!!, plain, secure).toResult()
+                    issue(issuer!!, plain, secure)
                 } else {
-                    Result.failure(DatException("Not Found IssuanceKey(SigningKey)"))
+                    DatResult.failure(DatException("Not Found IssuanceKey(SigningKey)"))
                 }
             }
-        }.getOrElse { Result.failure(it) })
+        }
     }
 
     fun issue(plain: String, secure: String): DatResult<String> {
@@ -34,43 +34,41 @@ class DatManager private constructor(
     }
 
     fun parse(dat: Dat): DatResult<Payload> {
-        return DatResult.parse(runCatching {
+        return DatResult.runCatchingResult {
             lock.read {
                 findUnsafeThread(dat.cid).fold(
-                    onSuccess = { certificate -> parse(certificate, dat).toResult() },
-                    onFailure = { exception -> Result.failure(exception) }
+                    onSuccess = { certificate -> parse(certificate, dat) },
                 )
             }
-        }.getOrElse { Result.failure(it) })
+        }
     }
 
-    fun parse(dat: String): DatResult<Payload> {
+    fun parse(dat: String?): DatResult<Payload> {
         return Dat.parse(dat).fold(
             onSuccess = { parsedDat -> parse(parsedDat) },
         )
     }
 
     fun parseWithoutVerifying(dat: Dat): DatResult<Payload> {
-        return DatResult.parse(runCatching {
+        return DatResult.runCatchingResult {
             lock.read {
                 findUnsafeThread(dat.cid).fold(
-                    onSuccess = { certificate -> parseWithoutVerifying(certificate, dat).toResult() },
-                    onFailure = { exception -> Result.failure(exception) }
+                    onSuccess = { certificate -> parseWithoutVerifying(certificate, dat) },
                 )
             }
-        }.getOrElse { Result.failure(it) })
+        }
     }
 
-    fun parseWithoutVerifying(dat: String): DatResult<Payload> {
+    fun parseWithoutVerifying(dat: String?): DatResult<Payload> {
         return Dat.parse(dat).fold(
             onSuccess = { parsedDat -> parseWithoutVerifying(parsedDat) },
         )
     }
 
-    internal fun findUnsafeThread(cid: ULong): Result<DatCertificate> {
+    internal fun findUnsafeThread(cid: ULong): DatResult<DatCertificate> {
         return certificates.find { it.cid == cid }
-            ?.run { Result.success(this) }
-            ?: Result.failure(DatException("Not Found CID(Certificate ID): $cid"))
+            ?.run { DatResult.success(this) }
+            ?: DatResult.failure(DatException("Not Found CID(Certificate ID): $cid"))
     }
 
     fun exportsIds(): List<Long> {
@@ -148,7 +146,7 @@ class DatManager private constructor(
 
         @JvmStatic
         fun issue(certificate: DatCertificate, plain: ByteArray, secure: ByteArray): DatResult<String> {
-            return DatResult.parse(runCatching {
+            return DatResult.runCatching {
                 val bw = ByteArrayOutputStream(((plain.size * 1.5).toInt() + (secure.size * 2)) + 300)
 
                 // expire
@@ -172,7 +170,7 @@ class DatManager private constructor(
                 bw.write(sign)
 
                 bw.toString()
-            })
+            }
         }
 
         @JvmStatic
@@ -189,7 +187,7 @@ class DatManager private constructor(
         }
 
         @JvmStatic
-        fun parse(certificate: DatCertificate, dat: String): DatResult<Payload> {
+        fun parse(certificate: DatCertificate, dat: String?): DatResult<Payload> {
             return Dat.parse(dat).fold(
                 onSuccess = { parsedDat -> parse(certificate, parsedDat) },
             )
@@ -197,13 +195,13 @@ class DatManager private constructor(
 
         @JvmStatic
         fun parseWithoutVerifying(certificate: DatCertificate, dat: Dat): DatResult<Payload> {
-            return DatResult.parse(runCatching {
+            return DatResult.runCatching {
                 Payload(dat.plainBytes, certificate.crypto.decrypt(dat.secureBytes))
-            })
+            }
         }
 
         @JvmStatic
-        fun parseWithoutVerifying(certificate: DatCertificate, dat: String): DatResult<Payload> {
+        fun parseWithoutVerifying(certificate: DatCertificate, dat: String?): DatResult<Payload> {
             return Dat.parse(dat).fold(
                 onSuccess = { parsedDat -> parseWithoutVerifying(certificate, parsedDat) },
             )
