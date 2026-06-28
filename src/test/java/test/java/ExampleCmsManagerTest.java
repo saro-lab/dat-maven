@@ -13,7 +13,7 @@ public class ExampleCmsManagerTest {
         // singleton
         DatCmsManager manager = DatCmsManager.builder()
                 .uri("http://localhost:8088")
-                //.intervalSeconds(0) // disable auto sync
+                //.intervalOff() // disable auto sync
                 .intervalSeconds(1)
                 .token("12345678901b")
                 .build();

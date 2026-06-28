@@ -52,13 +52,13 @@ class DatCmsManager private constructor(
             val result = client
                 .send(request, HttpResponse.BodyHandlers.ofString())
             if (result.statusCode() != 200) {
-                throw DatException("response status error, status:${result.statusCode()} in $newUrl");
+                log.error("response status error, status:${result.statusCode()} in $newUrl");
             }
 
             val body = result.body()
             val iof = body.indexOf("\n")
             if (iof == 0) {
-                throw DatException("invalid response: $newUrl");
+                log.error("invalid response: $newUrl");
             } else if (iof > 0) {
                 val newVersion = body.substring(0, iof).trim().toLong()
                 val newCertificates = body.substring(iof + 1).trim()
@@ -69,7 +69,7 @@ class DatCmsManager private constructor(
                 log.debug("no new certificate: $newUrl")
             }
         } catch (e: Exception) {
-            log.error("[Exception] DAT SMS Sync $newUrl: ", e)
+            log.error("[Exception] DAT SMS Sync $newUrl: $e")
         } finally {
             lock.writeLock().unlock()
         }
@@ -97,6 +97,7 @@ class DatCmsManager private constructor(
         fun token(token: String) = this.apply { this.token = token; }
         fun verifyOnly(verifyOnly: Boolean) = this.apply { this.verifyOnly = verifyOnly; }
         fun intervalSeconds(intervalSeconds: Long) = this.apply { this.intervalSeconds = intervalSeconds; }
+        fun intervalOff() = this.apply { this.intervalSeconds = 0L; }
 
         fun build(): DatCmsManager {
             if ((this.uri.path?.length?:0) > 1) {
